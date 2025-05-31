@@ -35,8 +35,7 @@ class HeaderNav extends StatelessWidget {
               // Simple nav items
               TextButton(
                 onPressed: () {
-                  // TODO: Home navigation
-                },
+context.go('/');                },
                 child: Text(
                   'Home',
                   style: GoogleFonts.montserrat(
@@ -50,8 +49,7 @@ class HeaderNav extends StatelessWidget {
 
               TextButton(
                 onPressed: () {
-                  // TODO: Navigate to profile creation
-                },
+context.go('/register');                },
                 child: Text(
                   'Create Your Profile',
                   style: GoogleFonts.montserrat(
@@ -66,8 +64,7 @@ class HeaderNav extends StatelessWidget {
 
               TextButton(
                 onPressed: () {
-                  // TODO: Navigate to job search
-                },
+                  context.go('/login');                    },
                 child: Text(
                   'Find a Job',
                   style: GoogleFonts.montserrat(
@@ -84,7 +81,8 @@ class HeaderNav extends StatelessWidget {
               // LOGIN Button
               OutlinedButton(
                 onPressed: () {
-                  context.go('/login');
+                  GoRouter.of(context).replace('/login');
+                  ;
                   },
                 style: OutlinedButton.styleFrom(
                   backgroundColor: primaryColor,
@@ -103,8 +101,9 @@ class HeaderNav extends StatelessWidget {
               // REGISTER Button
               TextButton(
                 onPressed: () {
-                  context.go('/Login');
-                  },
+                  GoRouter.of(context).replace('/register');
+
+                },
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -122,7 +121,7 @@ class HeaderNav extends StatelessWidget {
               // FOR RECRUITER Button
               TextButton(
                 onPressed: () {
-                  context.go('/Register');
+                  context.go('/register');
                 },
 
                 child: Row(

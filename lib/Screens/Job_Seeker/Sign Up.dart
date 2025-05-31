@@ -66,8 +66,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = Provider.of<SignUpProvider>(context, listen: false);
-    final role =
-        Provider.of<RoleProvider>(context, listen: false).selectedRole ?? '';
+    final role = Provider.of<RoleProvider>(context, listen: false).selectedRole ?? '';
     final error = await provider.signUp(
       name: "${_firstName.text.trim()} ${_lastName.text.trim()}",
       email: _email.text.trim(),
@@ -79,14 +78,18 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
       _showFlushbar(context, error, true);
     } else {
       _showFlushbar(context, "Signup Successful!", false);
+      Future.delayed(const Duration(seconds: 3), ()
+      {
+
+        context.go('/login');
+      }
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final role =
-        Provider.of<RoleProvider>(context, listen: false).selectedRole ?? '';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -94,12 +97,12 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
         children: [
           const HeaderNav(),
           Expanded(
-            child: AnimatedOpacity(
-              opacity: _opacity,
-              duration: const Duration(milliseconds: 500),
+    child: Padding(
+    padding: const EdgeInsets.fromLTRB(100,5,100,5),
+
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final isWide = constraints.maxWidth > 800;
+                  final isWide = constraints.maxWidth > 700;
 
                   return Row(
                     children: [
@@ -242,7 +245,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                               const SizedBox(height: 8),
                                               TextFormField(
                                                 enabled: false,
-                                                initialValue: role,
+                                                initialValue: 'Job Seeker',
                                                 decoration: InputDecoration(
                                                   filled: true,
                                                   fillColor:
@@ -257,9 +260,8 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                     Icons.security,
                                                     color: Colors.grey.shade600,
                                                   ),
-                                                  hintText: role,
-                                                  hintStyle:
-                                                      GoogleFonts.montserrat(
+                                                  hintText: 'Job Seeker',
+                                                  hintStyle: GoogleFonts.montserrat(
                                                     color: Colors.grey.shade600,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -318,8 +320,9 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                           obscureText: _obscurePassword,
                                           validator: (val) {
                                             if (val == null ||
-                                                val.trim().isEmpty)
+                                                val.trim().isEmpty) {
                                               return "Required";
+                                            }
                                             return null;
                                           },
                                           decoration: InputDecoration(
@@ -406,10 +409,12 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                           obscureText: _obscureConfirm,
                                           validator: (val) {
                                             if (val == null ||
-                                                val.trim().isEmpty)
+                                                val.trim().isEmpty) {
                                               return "Required";
-                                            if (val != _password.text)
+                                            }
+                                            if (val != _password.text) {
                                               return "Passwords do not match";
+                                            }
                                             return null;
                                           },
                                           decoration: InputDecoration(
@@ -520,7 +525,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                       children: [
                                         TextButton(
                                           onPressed: () {
-                                            //forgot
+                                            GoRouter.of(context).replace('/recover-password');
                                           },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
@@ -535,7 +540,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                         const SizedBox(width: 16),
                                         TextButton(
                                           onPressed: () {
-                                            context.go('/Login');
+                                            GoRouter.of(context).replace('/login');
                                           },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
@@ -559,8 +564,8 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
 
                       // ───────────── RIGHT COLUMN (SVG) ─────────────
                       if (isWide)
-                        Expanded(
-                          flex: 1,
+                        SizedBox(
+                          width: 800,
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: SvgPicture.asset(
@@ -572,8 +577,9 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                     ],
                   );
                 },
-              ),
+
             ),
+        ),
           ),
         ],
       ),

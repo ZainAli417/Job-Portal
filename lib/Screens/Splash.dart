@@ -7,10 +7,10 @@ import 'package:go_router/go_router.dart';
 
 import '../main.dart'; // for RoleProvider
 import 'Header_Nav.dart';
-import 'Job_Seeker/Sign Up.dart'; // SignUp screen (reads role from Provider)
+// SignUp screen (reads role from Provider)
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -103,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
                                       // 2) Navigate to SignUp
                                       //    using GoRouter (no fade) OR keep fade if you prefer:
-                                      context.go('/Register');
+                                      context.go('/register');
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: primaryColor,

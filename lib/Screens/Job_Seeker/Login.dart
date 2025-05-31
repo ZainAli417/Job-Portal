@@ -4,8 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/flutter_svg.dart' show  SvgPicture;
 
-import '../../main.dart';
 import '../Header_Nav.dart';
 import 'Signup_Provider.dart';
 import 'login_provider.dart'; // Assume this provider also has a `login(...)` method
@@ -31,7 +32,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
     super.initState();
     // Fade in the form
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
+       setState(() {
         _opacity = 1;
       });
     });
@@ -83,10 +84,10 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
       body: Column(
         children: [
           const HeaderNav(),
+
           Expanded(
-            child: AnimatedOpacity(
-              opacity: _opacity,
-              duration: const Duration(milliseconds: 500),
+    child: Padding(
+    padding: const EdgeInsets.fromLTRB(180,5,180,5),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth > 800;
@@ -94,10 +95,11 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                   return Row(
                     children: [
                       // ───── LEFT COLUMN: SVG IMAGE ─────
-                      if (!isWide)
-                        Expanded(
+                      if (isWide)
+                        SizedBox(
+                          width: 700,
                           child: Padding(
-                            padding: const EdgeInsets.all(30),
+                            padding: const EdgeInsets.all(10),
                             child: SvgPicture.asset(
                               "images/login.svg",
                               fit: BoxFit.contain,
@@ -108,9 +110,10 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                       // ───── RIGHT COLUMN: LOGIN FORM ─────
                       Expanded(
                         flex: isWide ? 1 : 0,
+
                         child: Center(
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 600),
+                            constraints: const BoxConstraints(maxWidth: 700),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -303,8 +306,8 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                       children: [
                                         TextButton(
                                           onPressed: () {
-                                            // TODO: Navigate to Forgot Password screen
-                                          },
+context.go('/recover-password');
+},
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
                                           child: Text(
@@ -318,7 +321,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                         const SizedBox(width: 16),
                                         TextButton(
                                           onPressed: () {
-                                            context.go('/Register');
+                                            context.go('/register');
                                           },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
@@ -342,8 +345,11 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                     ],
                   );
                 },
-              ),
+
             ),
+
+    ),
+
           ),
         ],
       ),

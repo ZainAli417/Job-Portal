@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart'; // ← Add this
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
+import 'Screens/Job_Seeker/Forget Password Provider.dart';
 import 'Screens/Job_Seeker/Signup_Provider.dart';
-import 'Screens/Job_Seeker/Login.dart';              // ← Login screen
-import 'Screens/Job_Seeker/Sign Up.dart';            // ← Signup screen
 import 'Screens/Job_Seeker/login_provider.dart';
-import 'Screens/Splash.dart';
 import 'Web_routes.dart';
 import 'firebase_options.dart';
 
@@ -15,8 +15,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // ─── Remove the “#/” from web URLs ───
+  setUrlStrategy(PathUrlStrategy());
+
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    // Force‐load a dummy Montserrat text so it’s pre-cached
+    // Precache a dummy Montserrat text so it’s ready immediately
     TextPainter(
       text: TextSpan(text: " ", style: GoogleFonts.montserrat()),
       textDirection: TextDirection.ltr,
@@ -28,7 +32,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => RoleProvider()),
         ChangeNotifierProvider(create: (_) => SignUpProvider()),
-        ChangeNotifierProvider(create: (_) => LoginProvider()),  // ← add LoginProvider
+        ChangeNotifierProvider(create: (_) => LoginProvider()),
+        ChangeNotifierProvider(create: (_) => ForgotPasswordProvider()),
       ],
       child: const JobPortalApp(),
     ),
@@ -43,7 +48,7 @@ class JobPortalApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Hire Flow',
       debugShowCheckedModeBanner: false,
-      routerConfig: router, // ← use GoRouter configuration
+      routerConfig: router,
       theme: ThemeData(
         primaryColor: const Color(0xFF006CFF),
         colorScheme: ColorScheme.fromSwatch().copyWith(
