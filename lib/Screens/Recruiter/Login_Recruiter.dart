@@ -4,20 +4,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_svg/flutter_svg.dart' show  SvgPicture;
 
+import '../../main.dart';
 import '../Header_Nav.dart';
-import 'Signup_Provider.dart';
-import 'login_provider.dart'; // Assume this provider also has a `login(...)` method
+import '../Job_Seeker/Signup_Provider.dart';
+import '../Job_Seeker/login_provider.dart';
 
-class JobSeekerLoginScreen extends StatefulWidget {
-  const JobSeekerLoginScreen({super.key});
+
+class Recruiter_LoginScreen extends StatefulWidget {
+  const Recruiter_LoginScreen({super.key});
   @override
-  State<JobSeekerLoginScreen> createState() => _JobSeekerLoginScreenState();
+  State<Recruiter_LoginScreen> createState() => _Recruiter_LoginScreenState();
 }
 
-class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
+class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers for email & password only
@@ -60,12 +60,10 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = Provider.of<LoginProvider>(context, listen: false);
-    // Replace with your actual login method. For example:
-    // final error = await provider.login(email: _email.text.trim(), password: _password.text, role: widget.role);
     final error = await provider.login(
       email: _email.text.trim(),
       password: _password.text,
-      expectedRole: 'Job_Seeker',
+      expectedRole: 'Recruiter', // or 'recruiter'
     );
 
 
@@ -93,8 +91,8 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
           const HeaderNav(),
 
           Expanded(
-    child: Padding(
-    padding: const EdgeInsets.fromLTRB(180,5,180,5),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(180,5,180,5),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth > 800;
@@ -108,7 +106,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: SvgPicture.asset(
-                              "images/login_jobseeker.svg",
+                              "images/login_recruiter.svg",
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -133,7 +131,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+                                  CrossAxisAlignment.stretch,
                                   children: [
                                     // ─── Heading ───
                                     Center(
@@ -141,8 +139,8 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                         "Login to your account",
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.montserrat(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.w500,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w600,
                                           color: Colors.black87,
                                         ),
                                       ),
@@ -152,7 +150,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                     // ─── Email Field ───
                                     Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Email",
@@ -167,7 +165,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                           controller: _email,
                                           hintText: "johndoe@email.com",
                                           keyboardType:
-                                              TextInputType.emailAddress,
+                                          TextInputType.emailAddress,
                                           suffixIcon: Icons.email_outlined,
                                           isEmail: true,
                                         ),
@@ -178,7 +176,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                     // ─── Password Field ───
                                     Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Password",
@@ -202,13 +200,13 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                           decoration: InputDecoration(
                                             hintText: "Enter your password",
                                             hintStyle: GoogleFonts.montserrat(
-                                              color: Color(0xff5C738A),
-                                              fontWeight: FontWeight.w400
+                                                color: Color(0xff5C738A),
+                                                fontWeight: FontWeight.w400
                                             ),
                                             filled: true,
                                             fillColor: Color(0xffEBEDF2),
                                             contentPadding:
-                                                const EdgeInsets.symmetric(
+                                            const EdgeInsets.symmetric(
                                               vertical: 12,
                                               horizontal: 16,
                                             ),
@@ -222,27 +220,27 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                               onPressed: () {
                                                 setState(() {
                                                   _obscurePassword =
-                                                      !_obscurePassword;
+                                                  !_obscurePassword;
                                                 });
                                               },
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.grey.shade200,
                                               ),
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.grey.shade200,
                                               ),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: primaryColor,
                                                 width: 2,
@@ -250,16 +248,16 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                             ),
                                             errorBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.red,
                                                 width: 2,
                                               ),
                                             ),
                                             focusedErrorBorder:
-                                                OutlineInputBorder(
+                                            OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.red,
                                                 width: 2,
@@ -327,12 +325,12 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                     // ─── Forgot & "New here? Create Account" Row ───
                                     Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         TextButton(
                                           onPressed: () {
-context.go('/recover-password');
-},
+                                            context.go('/recover-password');
+                                          },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
                                           child: Text(
@@ -346,7 +344,7 @@ context.go('/recover-password');
                                         const SizedBox(width: 16),
                                         TextButton(
                                           onPressed: () {
-                                            context.go('/register');
+                                            context.go('/recruiter-signup');
                                           },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
@@ -371,9 +369,9 @@ context.go('/recover-password');
                   );
                 },
 
-            ),
+              ),
 
-    ),
+            ),
 
           ),
         ],
@@ -397,7 +395,7 @@ context.go('/recover-password');
       keyboardType: keyboardType,
       obscureText: false,
       validator: validator ??
-          (val) {
+              (val) {
             if (val == null || val.trim().isEmpty) return "Required";
             if (isEmail && !val.contains("@")) return "Enter valid email";
             return null;

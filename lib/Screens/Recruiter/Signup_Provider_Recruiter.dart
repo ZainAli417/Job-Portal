@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class SignUpProvider with ChangeNotifier {
+class SignUpProvider_Recruiter with ChangeNotifier {
   bool isLoading = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -22,12 +22,12 @@ class SignUpProvider with ChangeNotifier {
         password: password,
       );
 
-      await _firestore.collection("Job_Seeker")
+      await _firestore.collection("Recruiter")
           .doc(userCred.user!.uid).set({
         "uid": userCred.user!.uid,
         "name": name,
         "email": email,
-        "role": 'Job_Seeker',
+        "role": 'Recruiter',
         "createdAt": Timestamp.now(),
       });
 

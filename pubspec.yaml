@@ -84,3 +84,9 @@ flutter:
   assets:
     - images/
     - images/splash.webp
+    - images/signup_recruiter.svg
+    - images/signup_jobseeker.svg
+    - images/login_recruiter.svg
+    - images/login_jobseeker.svg
+    - images/forgot.svg
+    - images/success.json

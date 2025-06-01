@@ -124,19 +124,33 @@ context.go('/register');                },
                   context.go('/register');
                 },
 
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('For Recruiter' , style: GoogleFonts.montserrat(
-                  color: Colors.white,
-                  textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w400),
-                ),),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.arrow_forward_ios_sharp, size: 18, color: Colors.white,),
-                     const SizedBox(width: 10),
+                child: GestureDetector(
+                  onTap: () {
+                    context.go('/recruiter-signup');
 
-                  ],
-
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'For Recruiter',
+                        style: GoogleFonts.montserrat(
+                          color: Colors.white,
+                          textStyle: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.arrow_forward_ios_sharp,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                  ),
                 ),
 
               ),

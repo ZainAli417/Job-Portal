@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'Screens/Job_Seeker/Forget Password.dart';
 import 'Screens/Job_Seeker/Login.dart';
 import 'Screens/Job_Seeker/Sign Up.dart';
+import 'Screens/Recruiter/Login_Recruiter.dart';
+import 'Screens/Recruiter/Sign Up_Recruiter.dart';
 import 'Screens/Splash.dart';
 
 /// A helper function that returns a CustomTransitionPage
@@ -22,9 +24,9 @@ CustomTransitionPage<T> _buildPageWithAnimation<T>({
       final slideAnim = Tween<Offset>(
         begin: const Offset(0, 0.05),
         end: Offset.zero,
-      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutSine));
       final fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: animation, curve: Curves.easeIn),
+        CurvedAnimation(parent: animation, curve: Curves.easeInCirc),
       );
 
       return SlideTransition(
@@ -85,6 +87,24 @@ final GoRouter router = GoRouter(
       },
     ),
 
-
+    GoRoute(
+      path: '/recruiter-login',
+      pageBuilder: (context, state) {
+        return _buildPageWithAnimation(
+          context: context,
+          state: state,
+          child: const Recruiter_LoginScreen(),
+        );
+      },
+    ), GoRoute(
+      path: '/recruiter-signup',
+      pageBuilder: (context, state) {
+        return _buildPageWithAnimation(
+          context: context,
+          state: state,
+          child: const Recruiter_SignUpScreen(),
+        );
+      },
+    ),
   ],
 );

@@ -96,13 +96,6 @@ class _SplashScreenState extends State<SplashScreen> {
                                       : Matrix4.identity(),
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // 1) Set role in Provider
-                                      Provider.of<RoleProvider>(context,
-                                              listen: false)
-                                          .setRole("Job Seeker");
-
-                                      // 2) Navigate to SignUp
-                                      //    using GoRouter (no fade) OR keep fade if you prefer:
                                       context.go('/register');
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -110,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      elevation: 0,
+                                      elevation: 2,
                                     ),
                                     child: Center(
                                       child: Text(
@@ -145,18 +138,14 @@ class _SplashScreenState extends State<SplashScreen> {
                                       : Matrix4.identity(),
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      Provider.of<RoleProvider>(context,
-                                              listen: false)
-                                          .setRole("Recruiter");
-
-                                      //here navigate to recuriter signup
-                                    },
+                                      context.go('/recruiter-signup');
+                                      },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      elevation: 0,
+                                      elevation: 2,
                                     ),
                                     child: Center(
                                       child: Text(

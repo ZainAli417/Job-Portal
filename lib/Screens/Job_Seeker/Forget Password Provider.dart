@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:lottie/lottie.dart';
 
 class ForgotPasswordProvider with ChangeNotifier {
   String _email = '';
@@ -62,72 +63,65 @@ class ForgotPasswordProvider with ChangeNotifier {
           child: Material(
             borderRadius: BorderRadius.circular(16),
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.85,
-              padding: const EdgeInsets.all(20),
+              width: MediaQuery.of(context).size.width * 0.3,
+              height: MediaQuery.of(context).size.height * 0.6,
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.black54),
-                          onPressed: () => Navigator.of(context).pop(),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center, // center horizontally
+                  children: [
+                    Lottie.asset(
+                      'images/success.json',
+                      height: 200,
+                      width: 200,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Check Your Mailbox',
+                      textAlign: TextAlign.center, // center text
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'If your email exists, a password reset link has been sent to your email.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      SvgPicture.asset(
-                        'images/success.svg',
-                        height: 170,
-                        width: 170,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Password Reset',
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'Close',
                         style: GoogleFonts.montserrat(
                           fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: Colors.black,
+                          fontSize: 15,
+                          color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'If your email exists, a password reset link has been sent to your email.',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.montserrat(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          color: primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                          'Close',
-                          style: GoogleFonts.montserrat(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                    ),
+                  ],
+                ),
+              ),            ),
           ),
         );
       },

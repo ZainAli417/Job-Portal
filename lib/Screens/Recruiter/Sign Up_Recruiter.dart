@@ -7,15 +7,17 @@ import 'package:provider/provider.dart';
 
 import '../../main.dart';
 import '../Header_Nav.dart';
-import 'Signup_Provider.dart';
+import '../Job_Seeker/Signup_Provider.dart';
+import 'Signup_Provider_Recruiter.dart';
 
-class JobSeekerSignUpScreen extends StatefulWidget {
-  const JobSeekerSignUpScreen({super.key});
+
+class Recruiter_SignUpScreen extends StatefulWidget {
+  const Recruiter_SignUpScreen({super.key});
   @override
-  State<JobSeekerSignUpScreen> createState() => _JobSeekerSignUpScreenState();
+  State<Recruiter_SignUpScreen> createState() => _Recruiter_SignUpScreenState();
 }
 
-class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
+class _Recruiter_SignUpScreenState extends State<Recruiter_SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers for each field
@@ -65,8 +67,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
   void _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = Provider.of<SignUpProvider>(context, listen: false);
-    final role = Provider.of<RoleProvider>(context, listen: false).selectedRole ?? '';
+    final provider = Provider.of<SignUpProvider_Recruiter>(context, listen: false);
     final error = await provider.signUp(
       name: "${_firstName.text.trim()} ${_lastName.text.trim()}",
       email: _email.text.trim(),
@@ -80,13 +81,11 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
       Future.delayed(const Duration(seconds: 1), ()
       {
 
-        context.go('/login');
+        context.go('/recruiter-login');
       }
       );
     }
   }
-
-  @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
 
@@ -96,8 +95,8 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
         children: [
           const HeaderNav(),
           Expanded(
-    child: Padding(
-    padding: const EdgeInsets.fromLTRB(100,5,100,5),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(100,5,100,5),
 
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -121,12 +120,12 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+                                  CrossAxisAlignment.stretch,
                                   children: [
                                     // ─── Heading ───
                                     Center(
                                       child: Text(
-                                        "Want to Express your Skills?\n Sign Up Today",
+                                        "Ready to Hire Global Talents?\n Sign Up Today",
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.montserrat(
                                           fontSize: 24,
@@ -144,7 +143,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 "First Name",
@@ -159,7 +158,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                 controller: _firstName,
                                                 hintText: "John",
                                                 keyboardType:
-                                                    TextInputType.name,
+                                                TextInputType.name,
                                               ),
                                             ],
                                           ),
@@ -169,7 +168,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 "Last Name",
@@ -184,7 +183,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                 controller: _lastName,
                                                 hintText: "Adam",
                                                 keyboardType:
-                                                    TextInputType.name,
+                                                TextInputType.name,
                                               ),
                                             ],
                                           ),
@@ -201,7 +200,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                           flex: 2,
                                           child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 "Email",
@@ -216,9 +215,9 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                 controller: _email,
                                                 hintText: "johndoe@email.com",
                                                 keyboardType:
-                                                    TextInputType.emailAddress,
+                                                TextInputType.emailAddress,
                                                 suffixIcon:
-                                                    Icons.email_outlined,
+                                                Icons.email_outlined,
                                                 isEmail: true,
                                               ),
                                             ],
@@ -230,7 +229,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                           flex: 1,
                                           child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 "Register As",
@@ -246,10 +245,10 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                 decoration: InputDecoration(
                                                   filled: true,
                                                   fillColor:
-                                                      Color(0xffEBEDF2),
+                                                  Color(0xffEBEDF2),
                                                   contentPadding:
-                                                      const EdgeInsets
-                                                          .symmetric(
+                                                  const EdgeInsets
+                                                      .symmetric(
                                                     vertical: 12,
                                                     horizontal: 16,
                                                   ),
@@ -257,7 +256,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                     Icons.gpp_good,
                                                     color: Color(0xff5C738A),
                                                   ),
-                                                  hintText: 'Job Seeker',
+                                                  hintText: 'Recruiter',
 
                                                   hintStyle: GoogleFonts.montserrat(
                                                     color: Color(0xff5C738A),
@@ -265,26 +264,26 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                                   ),
                                                   border: OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                    BorderRadius.circular(
+                                                        12),
                                                     borderSide: BorderSide(
                                                         color: Colors
                                                             .grey.shade200),
                                                   ),
                                                   enabledBorder:
-                                                      OutlineInputBorder(
+                                                  OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                    BorderRadius.circular(
+                                                        12),
                                                     borderSide: BorderSide(
                                                         color: Colors
                                                             .grey.shade200),
                                                   ),
                                                   focusedBorder:
-                                                      OutlineInputBorder(
+                                                  OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
+                                                    BorderRadius.circular(
+                                                        12),
                                                     borderSide: BorderSide(
                                                       color: primaryColor,
                                                       width: 2,
@@ -302,7 +301,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                     // ─── Password ───
                                     Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Password",
@@ -331,7 +330,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                             filled: true,
                                             fillColor: Color(0xffEBEDF2),
                                             contentPadding:
-                                                const EdgeInsets.symmetric(
+                                            const EdgeInsets.symmetric(
                                               vertical: 12,
                                               horizontal: 16,
                                             ),
@@ -345,25 +344,25 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                               onPressed: () {
                                                 setState(() {
                                                   _obscurePassword =
-                                                      !_obscurePassword;
+                                                  !_obscurePassword;
                                                 });
                                               },
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.grey.shade200),
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.grey.shade200),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: primaryColor,
                                                 width: 2,
@@ -371,14 +370,14 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                             ),
                                             errorBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.red, width: 2),
                                             ),
                                             focusedErrorBorder:
-                                                OutlineInputBorder(
+                                            OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.red, width: 2),
                                             ),
@@ -391,7 +390,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                     // ─── Confirm Password ───
                                     Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Confirm Password",
@@ -423,7 +422,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                             filled: true,
                                             fillColor: Color(0xffEBEDF2),
                                             contentPadding:
-                                                const EdgeInsets.symmetric(
+                                            const EdgeInsets.symmetric(
                                               vertical: 12,
                                               horizontal: 16,
                                             ),
@@ -437,25 +436,25 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                               onPressed: () {
                                                 setState(() {
                                                   _obscureConfirm =
-                                                      !_obscureConfirm;
+                                                  !_obscureConfirm;
                                                 });
                                               },
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.grey.shade200),
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.grey.shade200),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: primaryColor,
                                                 width: 2,
@@ -463,14 +462,14 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                             ),
                                             errorBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.red, width: 2),
                                             ),
                                             focusedErrorBorder:
-                                                OutlineInputBorder(
+                                            OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                   color: Colors.red, width: 2),
                                             ),
@@ -536,7 +535,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                     // ─── Links Row ───
                                     Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         TextButton(
                                           onPressed: () {
@@ -555,7 +554,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                         const SizedBox(width: 16),
                                         TextButton(
                                           onPressed: () {
-                                            GoRouter.of(context).replace('/login');
+                                            GoRouter.of(context).replace('/recruiter-login');
                                           },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),
@@ -584,17 +583,17 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: SvgPicture.asset(
-                              "images/signup_jobseeker.svg",
+                              "images/signup_recruiter.svg",
                               fit: BoxFit.contain,
-                            ),
+                            )
                           ),
                         ),
                     ],
                   );
                 },
 
+              ),
             ),
-        ),
           ),
         ],
       ),
@@ -620,7 +619,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
           ? (controller == _password ? _obscurePassword : _obscureConfirm)
           : false,
       validator: validator ??
-          (val) {
+              (val) {
             if (val == null || val.trim().isEmpty) return "Required";
             if (isEmail && !val.contains("@")) return "Enter valid email";
             return null;
@@ -639,29 +638,29 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
         ),
         suffixIcon: isPassword
             ? IconButton(
-                icon: Icon(
-                  (controller == _password
-                      ? (_obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility)
-                      : (_obscureConfirm
-                          ? Icons.visibility_off
-                          : Icons.visibility)),
-                  color: Color(0xff5C738A),
-                ),
-                onPressed: () {
-                  setState(() {
-                    if (controller == _password) {
-                      _obscurePassword = !_obscurePassword;
-                    } else {
-                      _obscureConfirm = !_obscureConfirm;
-                    }
-                  });
-                },
-              )
+          icon: Icon(
+            (controller == _password
+                ? (_obscurePassword
+                ? Icons.visibility_off
+                : Icons.visibility)
+                : (_obscureConfirm
+                ? Icons.visibility_off
+                : Icons.visibility)),
+            color: Color(0xff5C738A),
+          ),
+          onPressed: () {
+            setState(() {
+              if (controller == _password) {
+                _obscurePassword = !_obscurePassword;
+              } else {
+                _obscureConfirm = !_obscureConfirm;
+              }
+            });
+          },
+        )
             : (suffixIcon != null
-                ? Icon(suffixIcon, color: Color(0xff5C738A))
-                : null),
+            ? Icon(suffixIcon, color: Color(0xff5C738A))
+            : null),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade200),

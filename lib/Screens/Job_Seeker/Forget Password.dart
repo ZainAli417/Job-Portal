@@ -129,35 +129,47 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       const SizedBox(height: 32),
                                       Consumer<ForgotPasswordProvider>(
                                         builder: (_, provider, __) {
-                                          return SizedBox(
-                                            height: 50,
-                                            child: ElevatedButton(
-                                              onPressed: provider.isLoading
-                                                  ? null
-                                                  : _onSubmit,
-                                              style:
-                                              ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                primaryColor,
-                                                shape:
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      25),
+                                          return Align(
+                                            alignment: Alignment.center, // prevent full-width stretch
+                                            child: SizedBox(
+                                              height: 50,
+                                              width: 300, // adjust to desired narrower width
+                                              child: ElevatedButton(
+                                                onPressed: provider.isLoading ? () {} : _onSubmit, // keep enabled to preserve color
+                                                style: ButtonStyle(
+                                                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                                                        (states) {
+                                                      if (provider.isLoading) {
+                                                        return primaryColor.withOpacity(0.7);
+                                                      }
+                                                      return primaryColor;
+                                                    },
+                                                  ),
+                                                  // ensure the disabled/pressed states don’t default to grey:
+                                                  foregroundColor: WidgetStateProperty.all(Colors.white),
+                                                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                                    RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(25),
+                                                    ),
+                                                  ),
+                                                  elevation: WidgetStateProperty.all(0),
                                                 ),
-                                                elevation: 0,
-                                              ),
-                                              child: provider.isLoading
-                                                  ? const CircularProgressIndicator(
-                                                  color: Colors.white)
-                                                  : Text(
-                                                "Send Reset Link",
-                                                style: GoogleFonts
-                                                    .montserrat(
-                                                  fontSize: 16,
-                                                  fontWeight:
-                                                  FontWeight.w500,
-                                                  color: Colors.white,
+                                                child: provider.isLoading
+                                                    ? const SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child: CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                    strokeWidth: 2,
+                                                  ),
+                                                )
+                                                    : Text(
+                                                  "Send Reset Link",
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -219,17 +231,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: GoogleFonts.montserrat(
-          color: Colors.grey.shade500,
+          color: Color(0xff5C738A),
           fontWeight: FontWeight.w500,
         ),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: Color(0xffEBEDF2),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 12,
           horizontal: 16,
         ),
         suffixIcon: suffixIcon != null
-            ? Icon(suffixIcon, color: Colors.grey.shade600)
+            ? Icon(suffixIcon, color: Color(0xff5C738A))
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
