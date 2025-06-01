@@ -1,13 +1,11 @@
-// lib/screens/Splash.dart
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import '../main.dart'; // for RoleProvider
 import 'Header_Nav.dart';
-// SignUp screen (reads role from Provider)
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,43 +15,80 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late ImageProvider _backgroundImage;
   bool _hoverJobSeeker = false;
   bool _hoverRecruiter = false;
+  bool _checkingUser = true;
 
   @override
   void initState() {
     super.initState();
-    _backgroundImage = const AssetImage('images/splash.webp');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      precacheImage(_backgroundImage, context);
-    });
+    _checkLoggedInUser();
+  }
+
+  Future<void> _checkLoggedInUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final firestore = FirebaseFirestore.instance;
+
+    // Optional: add delay for smoother experience
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (user != null) {
+      final uid = user.uid;
+
+      try {
+        final jobSeeker = await firestore.collection('Job_Seeker').doc(uid).get();
+        if (jobSeeker.exists) {
+          if (mounted) context.go('/dashboard');
+          return;
+        }
+
+        final recruiter = await firestore.collection('Recruiter').doc(uid).get();
+        if (recruiter.exists) {
+          if (mounted) context.go('/recruiter-dashboard');
+          return;
+        }
+
+        // If user found but not in any collection → log out
+        await FirebaseAuth.instance.signOut();
+      } catch (e) {
+        debugPrint('Error checking user role: $e');
+        await FirebaseAuth.instance.signOut();
+      }
+    }
+
+    // If not logged in → show splash
+    if (mounted) {
+      setState(() => _checkingUser = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final screenSize = MediaQuery.of(context).size;
+
+    if (_checkingUser) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       body: Stack(
         children: [
-          // 1) Full-screen background
+          // 1. Background SVG
           Positioned.fill(
-            child: Image(
-              image: _backgroundImage,
-              fit: BoxFit.cover,
+            child: SvgPicture.asset(
+              'images/bg.svg',
+              fit: BoxFit.fitWidth,
             ),
           ),
 
-          // 2) Semi-transparent black overlay
+          // 2. Dark overlay
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.45),
-            ),
+            child: Container(color: Colors.black.withOpacity(0.45)),
           ),
 
-          // 3) Content (HeaderNav + hero buttons)
+          // 3. Content: Header + Buttons
           Column(
             children: [
               const HeaderNav(),
@@ -64,7 +99,6 @@ class _SplashScreenState extends State<SplashScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Hero title
                         Text(
                           'Find your next opportunity',
                           textAlign: TextAlign.center,
@@ -75,17 +109,13 @@ class _SplashScreenState extends State<SplashScreen> {
                           ),
                         ),
                         const SizedBox(height: 48),
-
-                        // Buttons row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // ── Job Seeker Button ──
                             MouseRegion(
-                              onEnter: (_) =>
-                                  setState(() => _hoverJobSeeker = true),
-                              onExit: (_) =>
-                                  setState(() => _hoverJobSeeker = false),
+                              onEnter: (_) => setState(() => _hoverJobSeeker = true),
+                              onExit: (_) => setState(() => _hoverJobSeeker = false),
                               child: SizedBox(
                                 width: 230,
                                 height: 50,
@@ -124,10 +154,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
                             // ── Recruiter Button ──
                             MouseRegion(
-                              onEnter: (_) =>
-                                  setState(() => _hoverRecruiter = true),
-                              onExit: (_) =>
-                                  setState(() => _hoverRecruiter = false),
+                              onEnter: (_) => setState(() => _hoverRecruiter = true),
+                              onExit: (_) => setState(() => _hoverRecruiter = false),
                               child: SizedBox(
                                 width: 230,
                                 height: 50,
@@ -139,7 +167,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                   child: ElevatedButton(
                                     onPressed: () {
                                       context.go('/recruiter-signup');
-                                      },
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
@@ -174,6 +202,4 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-
-  // Helper: fade-transition navigation
 }

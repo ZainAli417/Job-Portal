@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart';
-import '../Header_Nav.dart';
+import '../../Constant/Header_Nav.dart';
 import '../Job_Seeker/Signup_Provider.dart';
 import 'Signup_Provider_Recruiter.dart';
 
@@ -53,7 +53,7 @@ class _Recruiter_SignUpScreenState extends State<Recruiter_SignUpScreen> {
     super.dispose();
   }
 
-  void _showFlushbar(BuildContext context, String message, bool isError) {
+  void R_showFlushbar(BuildContext context, String message, bool isError) {
     Flushbar(
       message: message,
       duration: const Duration(seconds: 3),
@@ -64,7 +64,7 @@ class _Recruiter_SignUpScreenState extends State<Recruiter_SignUpScreen> {
     ).show(context);
   }
 
-  void _onSubmit() async {
+  void R_onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = Provider.of<SignUpProvider_Recruiter>(context, listen: false);
@@ -75,9 +75,9 @@ class _Recruiter_SignUpScreenState extends State<Recruiter_SignUpScreen> {
     );
 
     if (error != null) {
-      _showFlushbar(context, error, true);
+      R_showFlushbar(context, error, true);
     } else {
-      _showFlushbar(context, "Signup Successful!", false);
+      R_showFlushbar(context, "Signup Successful!", false);
       Future.delayed(const Duration(seconds: 1), ()
       {
 
@@ -488,7 +488,7 @@ class _Recruiter_SignUpScreenState extends State<Recruiter_SignUpScreen> {
                                             height: 50,
                                             width: 300, // adjust to desired narrower width
                                             child: ElevatedButton(
-                                              onPressed: provider.isLoading ? () {} : _onSubmit, // keep enabled to preserve color
+                                              onPressed: provider.isLoading ? () {} : R_onSubmit, // keep enabled to preserve color
                                               style: ButtonStyle(
                                                 backgroundColor: WidgetStateProperty.resolveWith<Color>(
                                                       (states) {

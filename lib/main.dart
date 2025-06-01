@@ -4,9 +4,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'Screens/Job_Seeker/Forget Password Provider.dart';
+import 'Constant/Forget Password Provider.dart';
 import 'Screens/Job_Seeker/Signup_Provider.dart';
 import 'Screens/Job_Seeker/login_provider.dart';
+import 'Screens/Recruiter/Signup_Provider_Recruiter.dart';
+import 'Screens/Recruiter/login_provider_Recruiter.dart';
+import 'Top_Nav_Provider.dart';
 import 'Web_routes.dart';
 import 'firebase_options.dart';
 
@@ -34,6 +37,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SignUpProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => ForgotPasswordProvider()),
+        ChangeNotifierProvider(create: (_) => SignUpProvider_Recruiter()),
+        ChangeNotifierProvider(create: (_) => LoginProvider_Recruiter()),
+        ChangeNotifierProvider(create: (_) => TopNavProvider()),
       ],
       child: const JobPortalApp(),
     ),

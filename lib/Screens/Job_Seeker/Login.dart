@@ -7,7 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/flutter_svg.dart' show  SvgPicture;
 
-import '../Header_Nav.dart';
+import '../../Constant/Header_Nav.dart';
+import '../Recruiter/dashboard_Recruiter.dart';
 import 'Signup_Provider.dart';
 import 'login_provider.dart'; // Assume this provider also has a `login(...)` method
 
@@ -71,15 +72,19 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
 
     if (error != null) {
       _showFlushbar(context, error, true);
-    } else {
-      _showFlushbar(context, "Login Successful!", false);
-      Future.delayed(const Duration(seconds: 1), ()
-      {
-
-        context.go('/');
-      }
-      );
     }
+    else {
+      _showFlushbar(context, "Login Successful!", false);
+      Future.delayed(const Duration(seconds: 1), () {
+        /*Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => JobSeekerDashboard()),
+        );
+
+         */
+        context.replace('/dashboard');
+      });
+    }
+
   }
 
   @override
@@ -142,7 +147,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.montserrat(
                                           fontSize: 28,
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.w600,
                                           color: Colors.black87,
                                         ),
                                       ),

@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../Header_Nav.dart';
+import 'Header_Nav.dart';
 import 'Forget Password Provider.dart';
 
 
@@ -96,8 +96,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           "Forgot Password",
                                           textAlign: TextAlign.center,
                                           style: GoogleFonts.montserrat(
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.w500,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w600,
                                             color: Colors.black87,
                                           ),
                                         ),

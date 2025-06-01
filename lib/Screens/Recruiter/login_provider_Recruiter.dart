@@ -20,7 +20,7 @@ class LoginProvider_Recruiter with ChangeNotifier {
     try {
       // 1. Fetch user role from Firestore
       final snapshot = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('Recruiter')
           .where('email', isEqualTo: email)
           .limit(1)
           .get();
@@ -28,7 +28,7 @@ class LoginProvider_Recruiter with ChangeNotifier {
       if (snapshot.docs.isEmpty) {
         _isLoading = false;
         notifyListeners();
-        return 'No user found for that email.';
+        return 'No Account Found. Please Register First.';
       }
 
       final userDoc = snapshot.docs.first;
@@ -38,7 +38,7 @@ class LoginProvider_Recruiter with ChangeNotifier {
       if (role != expectedRole) {
         _isLoading = false;
         notifyListeners();
-        return 'Invalid role for this account.';
+        return 'This is not a Job Seeker account.';
       }
 
       // 3. Authenticate
@@ -52,16 +52,16 @@ class LoginProvider_Recruiter with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       if (e.code == 'user-not-found') {
-        return 'No user found for that email.';
+        return 'No Account Found. Please Register First.';
       } else if (e.code == 'wrong-password') {
-        return 'Wrong password provided for that user.';
+        return 'Invalid Password.';
       } else {
         return e.message ?? 'An error occurred.';
       }
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return 'An unexpected error occurred.';
+      return 'An unexpected error occurred. Our Team is Working On it.';
     }
   }
 }
