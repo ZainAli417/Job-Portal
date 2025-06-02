@@ -60,230 +60,428 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       backgroundColor: backgroundGray,
-      body: Column(
+      body: Row(
         children: [
-          // ───────── Top Bar ─────────
-          Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            decoration: BoxDecoration(
-              color: backgroundGray,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-// Logo / App Name
-                Text(
-                  'LOGO_HERE',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
+          // ─── Side Navigation (full height, scrollable if content grows) ───
+          RepaintBoundary(
+            child: Container(
+              width: 240,
+              decoration: BoxDecoration(
+                color: backgroundGray,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    offset: const Offset(2, 0), // Right-side shadow
+                    blurRadius: 4,
                   ),
-                ),
+                ],
+              ),
+              child: ClipRRect(
+                // ensure rounded corners clip scrollable content
+                borderRadius: BorderRadius.circular(12),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
 
-                const Spacer(),
-
-// ─── Search Field (single Container; no “stacked boxes”) ───
-                SizedBox(
-                  width: 500,
-                  child: Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search,
-                            color: Color(
-                                0xFF5C738A)), // :contentReference[oaicite:0]{index=0}
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Search',
-                              hintStyle: GoogleFonts.montserrat(
-                                fontSize: 14,
-                                color: unselectedColor,
-                              ),
-                            ),
-                            style: GoogleFonts.montserrat(fontSize: 14),
+                      // ─── Logo inside Side Nav ───
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'LOGO_HERE',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 24),
-
-// Notification Icon
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.notifications_none,
-                      color: Color(0xFF5C738A)),
-                ),
-
-                const SizedBox(width: 16),
-
-// ─── Profile Avatar: either an image or the initial letter ───
-                GestureDetector(
-                  onTap: () {
-// Tapping could open a profile dropdown, etc.
-                  },
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: primaryColor,
-                    backgroundImage:
-                    null, // If you have a Network/ImageProvider, supply it here :contentReference[oaicite:1]{index=1}
-                    child: Text(
-                      'A', // Fallback to user’s initial letter if no image loaded
-                      style: GoogleFonts.montserrat(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
-                    ),
+                      const SizedBox(height: 24),
+                       Divider(
+                        thickness: 1,
+                        color: Color(0xFFCCCCCC),
+                      ),
+                      // ─── Avatar + Name/Title in a Row ───
+                      const SizedBox(height: 24),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Square avatar with 10px rounded corners & light-blue border
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: primaryColor,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.person,
+                                  size: 30,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            // Name + Subtitle stacked vertically
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Zain Ali',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Full Stack Dev.',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFF5C738A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Email Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.email_outlined,
+                                size: 16, color: Color(0xFF5C738A)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'zain.ali@example.com',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF5C738A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Phone Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.phone_outlined,
+                                size: 16, color: Color(0xFF5C738A)),
+                            const SizedBox(width: 6),
+                            Text(
+                              '(123) 456-7890',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF5C738A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Location Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined,
+                                size: 16, color: Color(0xFF5C738A)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'San Francisco, CA',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF5C738A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Short Bio / Description
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Highly skilled Full Stack Developer with 5+ years of experience in designing, developing, and implementing web applications. Proven ability to work with various technologies and frameworks.',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF5C738A),
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.justify,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // “View Full Profile →” Button
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: primaryColor.withOpacity(0.1),
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              // Navigate to full profile page
+                              context.go('/profile');
+                            },
+                            child: Text(
+                              'View Full Profile  →',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ─── Light-grey Divider ───
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Divider(
+                          thickness: 1,
+                          color: Color(0xFFCCCCCC),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ─── Dashboard Button ───
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _SideNavButton(
+                          icon: Icons.dashboard_outlined,
+                          label: 'Dashboard',
+                          isActive: widget.activeIndex == 0,
+                          onTap: () {
+                            if (widget.activeIndex != 0) {
+                              context.go('/dashboard');
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // ─── Create Profile Button ───
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _SideNavButton(
+                          icon: Icons.person_outline,
+                          label: 'Create Profile',
+                          isActive: widget.activeIndex == 1,
+                          onTap: () {
+                            if (widget.activeIndex != 1) {
+                              context.go('/profile');
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // ─── Saved Jobs ───
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _SideNavButton(
+                          icon: Icons.bookmark_border,
+                          label: 'Saved Jobs',
+                          isActive: widget.activeIndex == 2,
+                          onTap: () {
+                            if (widget.activeIndex != 2) {
+                              context.go('/saved');
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // ─── Job Alerts ───
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _SideNavButton(
+                          icon: Icons.notifications_none,
+                          label: 'Job Alerts',
+                          isActive: widget.activeIndex == 3,
+                          onTap: () {
+                            if (widget.activeIndex != 3) {
+                              context.go('/alerts');
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ─── Bottom Divider + Logout ───
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Divider(
+                          thickness: 1,
+                          color: Color(0xFFCCCCCC),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _LogoutButton(
+                          key: const ValueKey('nav_logout'),
+                          onTap: () {
+                            // handle logout
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
 
-
-
-
-
-          // ───────── Body: Side Nav + Main Content ─────────
+          // ─── Right Side: Top Bar (without Logo) + Main Content ───
           Expanded(
-            child: Row(
+            child: Column(
               children: [
-                // ─── Side Navigation ───
-                RepaintBoundary(
-                  child: Container(
-                    width: 240,
-                    color: backgroundGray,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Upper Section: avatar, name, menu buttons
-                        Column(
-                          children: [
-                            const SizedBox(height: 24),
-                            CircleAvatar(
-                              radius: 32,
-                              backgroundColor: primaryColor.withOpacity(0.1),
-                              child: Icon(Icons.person,
-                                  size: 32, color: primaryColor),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Zain Ali',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                // ─── Top Bar (Search, Notification, Avatar) ───
+                Container(
+                  // White background with subtle elevation
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  // Add top & bottom padding so the search bar isn't flush to the container edges
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Row(
+                    children: [
+                      // ─── Search Field ───────────────────────────
+                      Padding(
+                        // Add horizontal padding around the search field if desired
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: SizedBox(
+                          width: 360, // match screenshot width
+                          child: Container(
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(22), // fully round for 44px height
+                              border: Border.all(
+                                color: const Color(0xFFD1D9E5), // light gray border
+                                width: 1,
                               ),
                             ),
-                            const SizedBox(height: 16),
-
-                            // Light‐grey Divider
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Divider(
-                                thickness: 1,
-                                color: Color(0xFFCCCCCC),
-                              ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.search,
+                                  color: Color(0xFF5C738A),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: TextField(
+                                    style: TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                    decoration: InputDecoration(
+                                      isCollapsed: true,
+                                      contentPadding: EdgeInsets.zero,
+                                      border: InputBorder.none,
+                                      hintText: 'Search jobs, keywords, or companies...',
+                                      hintStyle: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFFB0B0B0), // very-light grey
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-
-                            // ─── Dashboard Button ───
-                            _SideNavButton(
-                              icon: Icons.dashboard_outlined,
-                              label: 'Dashboard',
-                              isActive: widget.activeIndex == 0,
-                              onTap: () {
-                                if (widget.activeIndex != 0) {
-                                  context.go('/dashboard');
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 8),
-
-                            // ─── Create Profile Button ───
-                            _SideNavButton(
-                              icon: Icons.person_outline,
-                              label: 'Create Profile',
-                              isActive: widget.activeIndex == 1,
-                              onTap: () {
-                                if (widget.activeIndex != 1) {
-                                  context.go('/profile');
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 8),
-
-                            // ─── Saved Jobs ───
-                            _SideNavButton(
-                              icon: Icons.bookmark_border,
-                              label: 'Saved Jobs',
-                              isActive: widget.activeIndex == 2,
-                              onTap: () {
-                                if (widget.activeIndex != 2) {
-                                  context.go('/saved');
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 8),
-
-                            // ─── Job Alerts ───
-                            _SideNavButton(
-                              icon: Icons.notifications_none,
-                              label: 'Job Alerts',
-                              isActive: widget.activeIndex == 3,
-                              onTap: () {
-                                if (widget.activeIndex != 3) {
-                                  context.go('/alerts');
-                                }
-                              },
-                            ),
-                          ],
+                          ),
                         ),
+                      ),
 
-                        // Bottom Section: Divider + Logout
-                        Column(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Divider(
-                                thickness: 1,
-                                color: Color(0xFFCCCCCC),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _LogoutButton(
-                              key: const ValueKey('nav_logout'),
-                              onTap: () {
-                                // handle logout
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                          ],
+                      const Spacer(),
+                      const SizedBox(width: 24),
+
+                      // ─── Notification Icon ───────────────────────
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.notifications_none,
+                          color: Color(0xFF5C738A),
+                          size: 24,
                         ),
-                      ],
-                    ),
+                      ),
+
+                      const SizedBox(width: 16),
+
+                      // ─── Profile Avatar ──────────────────────────
+                      GestureDetector(
+                        onTap: () {},
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: primaryColor,
+                          child: Text(
+                            initials.isNotEmpty ? initials : '–',
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                // ─── Main Content Area ───
+                // ─── Main Content Area ────────────────────────
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -305,13 +503,15 @@ class _MainLayoutState extends State<MainLayout> {
               ],
             ),
           ),
+
+
         ],
       ),
     );
   }
 }
 
-/// Single navigation button in the side‐rail.
+/// Single navigation button in the side-rail.
 /// Highlights itself if isActive == true.
 class _SideNavButton extends StatefulWidget {
   final IconData icon;
@@ -324,7 +524,7 @@ class _SideNavButton extends StatefulWidget {
     required this.label,
     required this.isActive,
     required this.onTap,
-  });
+  }) : super();
 
   @override
   State<_SideNavButton> createState() => _SideNavButtonState();
@@ -338,7 +538,6 @@ class _SideNavButtonState extends State<_SideNavButton> {
     final primaryColor = Theme.of(context).primaryColor;
     final unselectedColor = const Color(0xFF5C738A);
 
-// Determine background / text/icon color based on active/hover
     Color bgColor() {
       if (widget.isActive) {
         return primaryColor.withOpacity(0.1);
@@ -364,15 +563,12 @@ class _SideNavButtonState extends State<_SideNavButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child:Center(
-    child:
-
-      GestureDetector(
+      child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           height: 48,
-          width: 200,
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: bgColor(),
@@ -394,13 +590,10 @@ class _SideNavButtonState extends State<_SideNavButton> {
           ),
         ),
       ),
-    ),
     );
   }
 }
 
-/// ─── Logout Button ─────────────────────────────────
-/// Adds Key? key to constructor so super(key: key) is used properly.
 class _LogoutButton extends StatefulWidget {
   final VoidCallback onTap;
   final Key? key;
@@ -439,36 +632,31 @@ class _LogoutButtonState extends State<_LogoutButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: Center(
-        child: Material(
-          color: Colors.transparent, // eliminate grey splash
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: widget.onTap,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              height: 48,
-              width: 200,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: bgColor(),
-                borderRadius: BorderRadius.circular(8),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 48,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: bgColor(),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: iconColor()),
+              const SizedBox(width: 12),
+              Text(
+                'Logout',
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: textColor(),
+                ),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.logout, color: iconColor()),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Logout',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: textColor(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
       ),

@@ -10,8 +10,6 @@ import 'Screens/Job_Seeker/dashboard.dart';
 import 'Screens/Recruiter/Login_Recruiter.dart';
 import 'Screens/Recruiter/Sign Up_Recruiter.dart';
 import 'Constant/Splash.dart';
-
-/// A helper for your fade+slide transitions (unchanged).
 CustomTransitionPage<T> _buildPageWithAnimation<T>({
   required BuildContext context,
   required GoRouterState state,
@@ -20,19 +18,24 @@ CustomTransitionPage<T> _buildPageWithAnimation<T>({
   return CustomTransitionPage<T>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 400),
+    transitionDuration: const Duration(milliseconds: 370),
+    reverseTransitionDuration: const Duration(milliseconds: 370),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final slideAnim = Tween<Offset>(
-        begin: const Offset(0, 0.05),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutSine));
-      final fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: animation, curve: Curves.easeInCirc),
+      final fadeAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeInOut,
       );
 
-      return SlideTransition(
-        position: slideAnim,
-        child: FadeTransition(opacity: fadeAnim, child: child),
+      final scaleAnimation = Tween<double>(begin: 0.99, end: 1.0).animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      );
+
+      return FadeTransition(
+        opacity: fadeAnimation,
+        child: ScaleTransition(
+          scale: scaleAnimation,
+          child: child,
+        ),
       );
     },
   );

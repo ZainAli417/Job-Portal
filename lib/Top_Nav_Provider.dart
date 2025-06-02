@@ -19,7 +19,7 @@ class TopNavProvider extends ChangeNotifier {
       final uid = user.uid;
 
       // Correct path: Job_Seekers > [uid] > { name: "John Doe" }
-      final doc = await FirebaseFirestore.instance.collection('Job_Seekers').doc(uid).get();
+      final doc = await FirebaseFirestore.instance.collection('Job_Seeker').doc(uid).get();
       if (doc.exists) {
         final data = doc.data();
         if (data != null && data['name'] is String) {
