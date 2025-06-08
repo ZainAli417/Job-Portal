@@ -126,7 +126,7 @@ class _JobSeekerSignUpScreenState extends State<JobSeekerSignUpScreen> {
                                     // ─── Heading ───
                                     Center(
                                       child: Text(
-                                        "Want to Express your Skills?\n Sign Up Today",
+                                        "Welcome! Seeking a Job Opportunity?\n Sign Up Today",
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.montserrat(
                                           fontSize: 24,

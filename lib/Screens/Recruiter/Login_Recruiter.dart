@@ -74,7 +74,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
       Future.delayed(const Duration(seconds: 1), ()
       {
 
-        context.go('/');
+        context.pushReplacement('/recruiter-dashboard');
       }
       );
     }

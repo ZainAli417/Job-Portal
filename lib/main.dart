@@ -1,10 +1,11 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart'; // ← Add this
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'Constant/Forget Password Provider.dart';
+import 'Screens/Job_Seeker/Profile_Provider.dart';
 import 'Screens/Job_Seeker/Signup_Provider.dart';
 import 'Screens/Job_Seeker/login_provider.dart';
 import 'Screens/Recruiter/Signup_Provider_Recruiter.dart';
@@ -12,6 +13,8 @@ import 'Screens/Recruiter/login_provider_Recruiter.dart';
 import 'Top_Nav_Provider.dart';
 import 'Web_routes.dart';
 import 'firebase_options.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +22,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ─── Remove the “#/” from web URLs ───
-  setUrlStrategy(PathUrlStrategy());
+  // ─── If targeting web, you can reintroduce URL strategy here:
+  ;
+  if (kIsWeb) {
+     setUrlStrategy(PathUrlStrategy());
+  }
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     // Precache a dummy Montserrat text so it’s ready immediately
@@ -40,6 +46,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SignUpProvider_Recruiter()),
         ChangeNotifierProvider(create: (_) => LoginProvider_Recruiter()),
         ChangeNotifierProvider(create: (_) => TopNavProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => AuthNotifier()),
+
       ],
       child: const JobPortalApp(),
     ),
@@ -72,7 +81,8 @@ class JobPortalApp extends StatelessWidget {
           ),
         ),
         buttonTheme: ButtonThemeData(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           buttonColor: const Color(0xFF006CFF),
           textTheme: ButtonTextTheme.primary,
         ),

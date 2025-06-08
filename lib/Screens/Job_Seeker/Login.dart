@@ -76,12 +76,8 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
     else {
       _showFlushbar(context, "Login Successful!", false);
       Future.delayed(const Duration(seconds: 1), () {
-        /*Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => JobSeekerDashboard()),
-        );
 
-         */
-        context.replace('/dashboard');
+        context.pushReplacement('/dashboard');
       });
     }
 

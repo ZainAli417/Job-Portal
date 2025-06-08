@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 
 /// Fetches the current user’s full name from Firestore, then exposes
 /// the first two letters as `initials`.
-class TopNavProvider extends ChangeNotifier {
+class R_TopNavProvider extends ChangeNotifier {
   String _initials = '';
   String get initials => _initials;
 
-  TopNavProvider() {
+  R_TopNavProvider() {
     _fetchInitials();
   }
 
@@ -20,7 +20,7 @@ class TopNavProvider extends ChangeNotifier {
       final uid = user.uid;
 
       final doc = await FirebaseFirestore.instance
-          .collection('Job_Seeker')
+          .collection('Recruiter')
           .doc(uid)
           .get();
 

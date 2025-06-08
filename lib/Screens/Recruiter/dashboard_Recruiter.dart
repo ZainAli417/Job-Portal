@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
 
-class JobSeekerDashboard extends StatefulWidget {
-  const JobSeekerDashboard({super.key});
+class Recruiter_Dashboard extends StatefulWidget {
+  const Recruiter_Dashboard({super.key});
 
   @override
-  _JobSeekerDashboardState createState() => _JobSeekerDashboardState();
+  _Recruiter_DashboardState createState() => _Recruiter_DashboardState();
 }
 
-class _JobSeekerDashboardState extends State<JobSeekerDashboard> {
+class _Recruiter_DashboardState extends State<Recruiter_Dashboard> {
   @override
   void initState() {
     super.initState();
-    // Display the overlay for 6 seconds, then remove it.
-    Future.delayed(const Duration(seconds: 10), () {
-      setState(() {
-      });
-    });
 
-    // Removed getCurrentLocation() from here.
-    // Location fetching is handled in provider.setMapController.
   }
 
   @override

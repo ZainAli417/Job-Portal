@@ -184,6 +184,7 @@ class _JobCardDetailed extends StatelessWidget {
     const secondaryTextColor = Color(0xFF5C738A);
 
     return MouseRegion(
+      cursor: SystemMouseCursors.click,
       onEnter: (_) {},
       onExit: (_) {},
       child: AnimatedContainer(
@@ -354,15 +355,15 @@ class _JobCardDetailed extends StatelessWidget {
                               // TODO: Navigate to detailed view
                             },
                             style: ButtonStyle(
-                              side: MaterialStateProperty.all(
+                              side: WidgetStateProperty.all(
                                 BorderSide(color: primaryColor),
                               ),
-                              shape: MaterialStateProperty.all(
+                              shape: WidgetStateProperty.all(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              padding: MaterialStateProperty.all(
+                              padding: WidgetStateProperty.all(
                                 const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
                               ),
                             ),
@@ -370,7 +371,7 @@ class _JobCardDetailed extends StatelessWidget {
                               'Read More',
                               style: GoogleFonts.montserrat(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                                 color: primaryColor,
                               ),
                             ),
@@ -392,7 +393,7 @@ class _JobCardDetailed extends StatelessWidget {
                               'Apply Now',
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                                 color: primaryColor,
                               ),
                             ),

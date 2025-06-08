@@ -4,26 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:job_portal/Screens/Recruiter/sidebar_provider.dart';
 import 'package:provider/provider.dart';
-import 'Screens/Job_Seeker/Login.dart';
-import 'Top_Nav_Provider.dart';
 
-class MainLayout extends StatefulWidget {
+class Recruiter_MainLayout extends StatefulWidget {
   final Widget child;
   final int activeIndex; // 0 = Dashboard, 1 = Profile, etc.
   final Key? key;
 
-  const MainLayout({
+  const Recruiter_MainLayout({
     this.key,
     required this.child,
     required this.activeIndex,
   }) : super(key: key);
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  State<Recruiter_MainLayout> createState() => _Recruiter_MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
   bool _isFocused = false;
   final FocusNode _focusNode = FocusNode();
   final Color _cardWhite = Color(0xFFFFFFFF);
@@ -53,18 +52,16 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<TopNavProvider>(
-      create: (_) => TopNavProvider(),
+    return ChangeNotifierProvider<R_TopNavProvider>(
+      create: (_) => R_TopNavProvider(),
       child: RepaintBoundary(child: _buildScaffold(context)),
     );
   }
 
   Widget _buildScaffold(BuildContext context) {
-    final primaryColor = Theme
-        .of(context)
-        .primaryColor;
+    final primaryColor = Theme.of(context).primaryColor;
     final backgroundGray = const Color(0xFFF5F8FA);
-    final initials = context.watch<TopNavProvider>().initials;
+    final initials = context.watch<R_TopNavProvider>().initials;
     return Scaffold(
       backgroundColor: backgroundGray,
       body: Row(
@@ -131,7 +128,7 @@ class _MainLayoutState extends State<MainLayout> {
                           isActive: widget.activeIndex == 0,
                           onTap: () {
                             if (widget.activeIndex != 0) {
-                              context.go('/dashboard');
+                              context.go('/recruiter-dashboard');
                             }
                           },
                         ),
@@ -143,11 +140,11 @@ class _MainLayoutState extends State<MainLayout> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
                           icon: Icons.person_outline,
-                          label: 'Create Profile',
+                          label: 'Post A Job',
                           isActive: widget.activeIndex == 1,
                           onTap: () {
                             if (widget.activeIndex != 1) {
-                              context.go('/profile');
+                              context.go('/job-posting');
                             }
                           },
                         ),
@@ -158,12 +155,12 @@ class _MainLayoutState extends State<MainLayout> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
-                          icon: Icons.bookmark_border,
-                          label: 'Saved Jobs',
+                          icon: Icons.file_copy,
+                          label: 'View Applications',
                           isActive: widget.activeIndex == 2,
                           onTap: () {
                             if (widget.activeIndex != 2) {
-                              context.go('/saved');
+                              context.go('/view-applications');
                             }
                           },
                         ),
@@ -174,12 +171,12 @@ class _MainLayoutState extends State<MainLayout> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
-                          icon: Icons.notifications_none,
-                          label: 'Job Alerts',
-                          isActive: widget.activeIndex == 3,
+                          icon: Icons.broadcast_on_home_rounded,
+                          label: 'Schedule Interviews',
+                          isActive: widget.activeIndex == 2,
                           onTap: () {
-                            if (widget.activeIndex != 3) {
-                              context.go('/alerts');
+                            if (widget.activeIndex != 2) {
+                              context.go('/interviews');
                             }
                           },
                         ),
@@ -194,15 +191,28 @@ class _MainLayoutState extends State<MainLayout> {
                           color: Color(0xFFCCCCCC),
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _SideNavButton(
+                          icon: Icons.notifications_none,
+                          label: 'Settings',
+                          isActive: widget.activeIndex == 3,
+                          onTap: () {
+                            if (widget.activeIndex != 3) {
+                              context.go('/settings');
+                            }
+                          },
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: _LogoutButton(
                           key: const ValueKey('nav_logout'),
-                          onTap: () async{
-                            // handle logout
+                          onTap: () async {
                             await FirebaseAuth.instance.signOut();
-                            context.pushReplacement('/login');
+                            context.pushReplacement('/');
+                            // handle logout
                           },
                         ),
                       ),
@@ -294,19 +304,18 @@ class _MainLayoutState extends State<MainLayout> {
                 ),
                 boxShadow: _isSearchFocused
                     ? [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
                     : null,
               ),
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
-                style: TextStyle(
-                  fontFamily: 'Inter',
+                style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: _textPrimary,
@@ -321,21 +330,20 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {});
-                    },
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: _textSecondary,
-                      size: 18,
-                    ),
-                    splashRadius: 16,
-                  )
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                          },
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: _textSecondary,
+                            size: 18,
+                          ),
+                          splashRadius: 16,
+                        )
                       : null,
                   hintText: 'Search jobs, companies, or keywords...',
-                  hintStyle: TextStyle(
-                    fontFamily: 'Inter',
+                  hintStyle: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: _textSecondary,
@@ -419,8 +427,7 @@ class _MainLayoutState extends State<MainLayout> {
               ),
               child: Text(
                 badge > 99 ? '99+' : badge.toString(),
-                style: const TextStyle(
-                  fontFamily: 'Inter',
+                style: GoogleFonts.montserrat(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -453,8 +460,7 @@ class _MainLayoutState extends State<MainLayout> {
           backgroundColor: primaryColor,
           child: Text(
             initials.isNotEmpty ? initials : 'ZA',
-            style: const TextStyle(
-              fontFamily: 'Inter',
+            style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -462,8 +468,7 @@ class _MainLayoutState extends State<MainLayout> {
           ),
         ),
       ),
-      itemBuilder: (context) =>
-      [
+      itemBuilder: (context) => [
         _buildPopupMenuItem('Profile', Icons.person_outline_rounded, () {
           context.go('/profile');
         }),
@@ -487,12 +492,11 @@ class _MainLayoutState extends State<MainLayout> {
                 color: Colors.red.shade500,
               ),
               const SizedBox(width: 12),
-              const Flexible(
+              Flexible(
                 child: Text(
                   'Logout',
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
+                  style: GoogleFonts.montserrat(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.red,
@@ -506,11 +510,12 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  PopupMenuItem<String> _buildPopupMenuItem(String title,
-      IconData icon,
-      VoidCallback onTap, {
-        bool isDestructive = false,
-      }) {
+  PopupMenuItem<String> _buildPopupMenuItem(
+    String title,
+    IconData icon,
+    VoidCallback onTap, {
+    bool isDestructive = false,
+  }) {
     return PopupMenuItem<String>(
       value: title.toLowerCase(),
       onTap: onTap,
@@ -526,8 +531,7 @@ class _MainLayoutState extends State<MainLayout> {
             child: Text(
               title,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Inter',
+              style: GoogleFonts.montserrat(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isDestructive ? Colors.red.shade500 : _textPrimary,
@@ -573,47 +577,43 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              'Confirm Logout',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            content: const Text(
-              'Are you sure you want to logout?',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: ()async {
-
-                    await FirebaseAuth.instance.signOut();
-                    context.pushReplacement('/login');
-
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                ),
-                child: const Text('Logout'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Confirm Logout',
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w600,
           ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+
+              context.pushReplacement('/login');
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -654,8 +654,7 @@ void _showLogoutDialog(BuildContext context) {
                   children: [
                     Text(
                       'Zain Ali',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
+                      style: GoogleFonts.montserrat(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: _textPrimary,
@@ -663,9 +662,8 @@ void _showLogoutDialog(BuildContext context) {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Full Stack Developer',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
+                      'HOD HR Section',
+                      style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: _textSecondary,
@@ -676,34 +674,14 @@ void _showLogoutDialog(BuildContext context) {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => context.go('/profile'),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'View Profile',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
+          const SizedBox(height: 10),
+
         ],
       ),
     );
   }
 }
+
 /// Single navigation button in the side-rail.
 /// Highlights itself if isActive == true.
 class _SideNavButton extends StatefulWidget {
@@ -830,15 +808,12 @@ class _LogoutButtonState extends State<_LogoutButton> {
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => _logout(context),
-
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           height: 48,
-
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-
             color: bgColor(),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -863,17 +838,9 @@ class _LogoutButtonState extends State<_LogoutButton> {
   // In your dashboard screen's state widget (e.g., _JobSeekerDashboardState)
 
   Future<void> _logout(BuildContext context) async {
-    // First, sign out the user from Firebase.
     await FirebaseAuth.instance.signOut();
-
-    // IMPORTANT: Then, use context.go() to navigate.
-    // This clears the entire navigation stack and pushes '/login' as the new
-    // base route. This prevents the user from pressing the browser's back
-    // button to get back to the dashboard.
     if (context.mounted) {
       context.pushReplacement('/login');
     }
   }
-
-
 }

@@ -114,6 +114,7 @@ class _SplashScreenState extends State<SplashScreen> {
                           children: [
                             // ── Job Seeker Button ──
                             MouseRegion(
+                              cursor: SystemMouseCursors.click,
                               onEnter: (_) => setState(() => _hoverJobSeeker = true),
                               onExit: (_) => setState(() => _hoverJobSeeker = false),
                               child: SizedBox(
@@ -154,6 +155,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
                             // ── Recruiter Button ──
                             MouseRegion(
+                              cursor: SystemMouseCursors.click,
                               onEnter: (_) => setState(() => _hoverRecruiter = true),
                               onExit: (_) => setState(() => _hoverRecruiter = false),
                               child: SizedBox(
