@@ -81,7 +81,7 @@ class _Recruiter_SignUpScreenState extends State<Recruiter_SignUpScreen> {
       Future.delayed(const Duration(seconds: 1), ()
       {
 
-        context.go('/recruiter-login');
+        context.pushReplacement('/recruiter-login');
       }
       );
     }

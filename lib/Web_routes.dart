@@ -13,7 +13,8 @@ import 'Screens/Job_Seeker/dashboard.dart';
 import 'Screens/Recruiter/Login_Recruiter.dart';
 import 'Screens/Recruiter/Sign Up_Recruiter.dart';
 import 'Constant/Splash.dart';
-import 'Screens/Recruiter/dashboard_Recruiter.dart';
+import 'Screens/Recruiter/job_posting.dart';
+import 'Screens/Recruiter/recuriter_dashbaord_view_class.dart';
 
 class AuthNotifier extends ChangeNotifier {
   late final StreamSubscription<User?> _authSubscription;
@@ -68,36 +69,45 @@ final GoRouter router = GoRouter(
   initialLocation: '/',
   // Use the AuthNotifier instance for the refreshListenable.
   refreshListenable: _authNotifier,
-  redirect: (context, state) {
-    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
-    final isOnSplash = state.fullPath == '/';
-    final isOnAuthPages = [
-      '/login',
-      '/register',
-      '/recruiter-login',
-      '/recruiter-signup',
-      '/recover-password'
-    ].contains(state.fullPath);
+    redirect: (context, state) {
+      final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+      final isOnSplash   = state.fullPath == '/';
 
-    // If user is not logged in and tries to access a protected route
-    if (!isLoggedIn && !isOnAuthPages && !isOnSplash) {
-      return '/login';
-    }
+      // split “auth‐pages” into two groups:
+      final isOnJSAuth = [
+        '/login',
+        '/register',
+        '/recover-password',
+      ].contains(state.fullPath);
 
-    // If user is logged in and tries to access an auth page
-    if (isLoggedIn && isOnAuthPages) {
-      return '/dashboard';
-    }
+      final isOnRecAuth = [
+        '/recruiter-login',
+        '/recruiter-signup',
+      ].contains(state.fullPath);
 
-    // Optional: Already logged in and lands on '/' splash screen — skip it
-    if (isLoggedIn && isOnSplash) {
-      return '/dashboard';
-    }
+      // 1) If not logged in and not on any auth page (JS or Rec) and not on splash → force Job‐Seeker login
+     if (!isLoggedIn && !isOnJSAuth && !isOnRecAuth && !isOnSplash) {
+       return '/';
+      }
 
-    // Otherwise, allow navigation as is
-    return null;
-  },
-  routes: [
+      // 2) If signed in and tries to hit a Job‐Seeker auth page → send to Job‐Seeker dashboard
+      if (isLoggedIn && isOnJSAuth) {
+        return '/dashboard';
+      }
+
+      // 3) If signed in and tries to hit a Recruiter auth page → send to Recruiter dashboard
+      if (isLoggedIn && isOnRecAuth) {
+        return '/recruiter-dashboard';
+      }
+
+      // 4) If already signed in and landing on Splash → send to Job‐Seeker dashboard by default
+      if (isLoggedIn && isOnSplash) {
+        return '/dashboard';
+      }
+
+      // Otherwise, allow navigation
+      return null;
+    },  routes: [
     GoRoute(
       path: '/',
       pageBuilder: (context, state) =>
@@ -111,6 +121,13 @@ final GoRouter router = GoRouter(
         state: state,
       ),
     ),
+
+
+
+
+
+
+
     GoRoute(
       path: '/login',
       pageBuilder: (context, state) => _buildPageWithAnimation(
@@ -127,6 +144,37 @@ final GoRouter router = GoRouter(
         state: state,
       ),
     ),
+  GoRoute(
+    path: '/dashboard',
+    pageBuilder: (context, state) => _buildPageWithAnimation(
+      child: const JobSeekerDashboard(),
+      context: context,
+      state: state,
+    ),
+  ),
+  GoRoute(
+    path: '/profile',
+    pageBuilder: (context, state) => _buildPageWithAnimation(
+      child: const ProfileScreen(),
+      context: context,
+      state: state,
+    ),
+  ),
+  GoRoute(
+    path: '/download-cv',
+    pageBuilder: (context, state) => _buildPageWithAnimation(
+      child: const CVGeneratorDialog(),
+      context: context,
+      state: state,
+    ),
+  ),
+
+
+
+
+
+
+
     GoRoute(
       path: '/recruiter-login',
       pageBuilder: (context, state) => _buildPageWithAnimation(
@@ -146,34 +194,21 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/recruiter-dashboard',
       pageBuilder: (context, state) => _buildPageWithAnimation(
-        child: const Recruiter_Dashboard(),
+        child: const JobsDashboard(),
         context: context,
         state: state,
       ),
-    ),
-    GoRoute(
-      path: '/dashboard',
+    ), GoRoute(
+      path: '/job-posting',
       pageBuilder: (context, state) => _buildPageWithAnimation(
-        child: const JobSeekerDashboard(),
+        child: const JobPostingScreen(),
         context: context,
         state: state,
       ),
     ),
-    GoRoute(
-      path: '/profile',
-      pageBuilder: (context, state) => _buildPageWithAnimation(
-        child: const ProfileScreen(),
-        context: context,
-        state: state,
-      ),
-    ),
-    GoRoute(
-      path: '/download-cv',
-      pageBuilder: (context, state) => _buildPageWithAnimation(
-        child: const CVGeneratorDialog(),
-        context: context,
-        state: state,
-      ),
-    ),
+
+
+
+
   ],
 );

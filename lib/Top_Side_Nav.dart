@@ -13,7 +13,7 @@ class MainLayout extends StatefulWidget {
   final int activeIndex; // 0 = Dashboard, 1 = Profile, etc.
   final Key? key;
 
-  const MainLayout({
+     MainLayout({
     this.key,
     required this.child,
     required this.activeIndex,
@@ -63,7 +63,7 @@ class _MainLayoutState extends State<MainLayout> {
     final primaryColor = Theme
         .of(context)
         .primaryColor;
-    final backgroundGray = const Color(0xFFF5F8FA);
+    final backgroundGray =    Color(0xFFF5F8FA);
     final initials = context.watch<TopNavProvider>().initials;
     return Scaffold(
       backgroundColor: backgroundGray,
@@ -78,7 +78,7 @@ class _MainLayoutState extends State<MainLayout> {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
-                    offset: const Offset(2, 0), // Right-side shadow
+                    offset:    Offset(2, 0), // Right-side shadow
                     blurRadius: 4,
                   ),
                 ],
@@ -91,11 +91,11 @@ class _MainLayoutState extends State<MainLayout> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 24),
+                         SizedBox(height: 24),
 
                       // ─── Logo inside Side Nav ───
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:    EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           'LOGO_HERE',
                           style: GoogleFonts.montserrat(
@@ -105,26 +105,26 @@ class _MainLayoutState extends State<MainLayout> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                         SizedBox(height: 24),
                       Divider(
                         thickness: 1,
                         color: Color(0xFFCCCCCC),
                       ),
-                      const SizedBox(height: 24),
+                         SizedBox(height: 24),
                       _buildUserProfileSection(primaryColor),
-                      const SizedBox(height: 12),
-                      const Padding(
+                         SizedBox(height: 12),
+                         Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Divider(
                           thickness: 1,
                           color: Color(0xFFCCCCCC),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                         SizedBox(height: 16),
 
                       // ─── Dashboard Button ───
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:    EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
                           icon: Icons.dashboard_outlined,
                           label: 'Dashboard',
@@ -136,11 +136,11 @@ class _MainLayoutState extends State<MainLayout> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 8),
+                         SizedBox(height: 8),
 
                       // ─── Create Profile Button ───
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:    EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
                           icon: Icons.person_outline,
                           label: 'Create Profile',
@@ -152,11 +152,11 @@ class _MainLayoutState extends State<MainLayout> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 8),
+                         SizedBox(height: 8),
 
                       // ─── Saved Jobs ───
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:    EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
                           icon: Icons.bookmark_border,
                           label: 'Saved Jobs',
@@ -168,11 +168,11 @@ class _MainLayoutState extends State<MainLayout> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 8),
+                         SizedBox(height: 8),
 
                       // ─── Job Alerts ───
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:    EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
                           icon: Icons.notifications_none,
                           label: 'Job Alerts',
@@ -184,21 +184,21 @@ class _MainLayoutState extends State<MainLayout> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 16),
+                         SizedBox(height: 16),
 
                       // ─── Bottom Divider + Logout ───
-                      const Padding(
+                         Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Divider(
                           thickness: 1,
                           color: Color(0xFFCCCCCC),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                         SizedBox(height: 8),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:    EdgeInsets.symmetric(horizontal: 16),
                         child: _LogoutButton(
-                          key: const ValueKey('nav_logout'),
+                          key:    ValueKey('nav_logout'),
                           onTap: () async{
                             // handle logout
                             await FirebaseAuth.instance.signOut();
@@ -206,7 +206,7 @@ class _MainLayoutState extends State<MainLayout> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 16),
+                         SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -223,13 +223,13 @@ class _MainLayoutState extends State<MainLayout> {
                 // ─── Main Content Area ────────────────────────
                 Expanded(
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
+                    duration:    Duration(milliseconds: 300),
                     transitionBuilder: (child, animation) {
                       return FadeTransition(
                         opacity: animation,
                         child: SlideTransition(
                           position: Tween<Offset>(
-                            begin: const Offset(0.0, 0.1),
+                            begin:    Offset(0.0, 0.1),
                             end: Offset.zero,
                           ).animate(animation),
                           child: child,
@@ -253,7 +253,7 @@ class _MainLayoutState extends State<MainLayout> {
       width: 800,
       decoration: BoxDecoration(
         color: _cardWhite,
-        borderRadius: const BorderRadius.only(
+        borderRadius:    BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
         ),
@@ -261,12 +261,12 @@ class _MainLayoutState extends State<MainLayout> {
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset:    Offset(0, 4),
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 6,
-            offset: const Offset(0, 2),
+            offset:    Offset(0, 2),
           ),
         ],
         border: Border(
@@ -276,7 +276,7 @@ class _MainLayoutState extends State<MainLayout> {
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding:    EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
           // ─── Enhanced Search Field ───
@@ -284,7 +284,7 @@ class _MainLayoutState extends State<MainLayout> {
             flex: 2,
             child: Container(
               height: 48,
-              constraints: const BoxConstraints(maxWidth: 480),
+                constraints:    BoxConstraints(maxWidth: 480),
               decoration: BoxDecoration(
                 color: _isSearchFocused ? _cardWhite : _hoverColor,
                 borderRadius: BorderRadius.circular(12),
@@ -297,7 +297,7 @@ class _MainLayoutState extends State<MainLayout> {
                   BoxShadow(
                     color: primaryColor.withOpacity(0.1),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset:    Offset(0, 2),
                   ),
                 ]
                     : null,
@@ -305,9 +305,8 @@ class _MainLayoutState extends State<MainLayout> {
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
+                style: GoogleFonts.montserrat(
+                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: _textPrimary,
                   height: 1.2,
@@ -334,15 +333,14 @@ class _MainLayoutState extends State<MainLayout> {
                   )
                       : null,
                   hintText: 'Search jobs, companies, or keywords...',
-                  hintStyle: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 16,
+                  hintStyle:  GoogleFonts.montserrat(
+                       fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: _textSecondary,
                     height: 1.2,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
+                  contentPadding:    EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
@@ -355,7 +353,7 @@ class _MainLayoutState extends State<MainLayout> {
             ),
           ),
 
-          const Spacer(),
+             Spacer(),
 
           // ─── Quick Actions ───
           Row(
@@ -367,7 +365,7 @@ class _MainLayoutState extends State<MainLayout> {
                 badge: 3, // Example badge count
               ),
 
-              const SizedBox(width: 12),
+                 SizedBox(width: 12),
 
               // Messages
               _buildIconButton(
@@ -375,7 +373,7 @@ class _MainLayoutState extends State<MainLayout> {
                 onPressed: () => _showMessages(context),
               ),
 
-              const SizedBox(width: 16),
+                 SizedBox(width: 16),
 
               // Profile Menu
               _buildProfileMenu(primaryColor, initials),
@@ -408,20 +406,19 @@ class _MainLayoutState extends State<MainLayout> {
             right: 8,
             top: 8,
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding:    EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.red.shade500,
                 borderRadius: BorderRadius.circular(8),
               ),
-              constraints: const BoxConstraints(
+                constraints:BoxConstraints(
                 minWidth: 20,
                 minHeight: 20,
               ),
               child: Text(
                 badge > 99 ? '99+' : badge.toString(),
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 10,
+                style:     GoogleFonts.montserrat(
+                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -435,12 +432,12 @@ class _MainLayoutState extends State<MainLayout> {
 
   Widget _buildProfileMenu(Color primaryColor, String initials) {
     return PopupMenuButton<String>(
-      offset: const Offset(0, 8),
+      offset:    Offset(0, 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: Container(
-        padding: const EdgeInsets.all(2),
+        padding:    EdgeInsets.all(2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
@@ -453,8 +450,7 @@ class _MainLayoutState extends State<MainLayout> {
           backgroundColor: primaryColor,
           child: Text(
             initials.isNotEmpty ? initials : 'ZA',
-            style: const TextStyle(
-              fontFamily: 'Inter',
+            style:     GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -473,7 +469,7 @@ class _MainLayoutState extends State<MainLayout> {
         _buildPopupMenuItem('Help', Icons.help_outline_rounded, () {
           // Handle help
         }),
-        const PopupMenuDivider(),
+           PopupMenuDivider(),
         PopupMenuItem<String>(
           value: 'logout',
           onTap: () {
@@ -486,14 +482,13 @@ class _MainLayoutState extends State<MainLayout> {
                 size: 18,
                 color: Colors.red.shade500,
               ),
-              const SizedBox(width: 12),
-              const Flexible(
+                 SizedBox(width: 12),
+                 Flexible(
                 child: Text(
                   'Logout',
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
+                  style:  GoogleFonts.montserrat(
+                       fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.red,
                   ),
@@ -521,13 +516,12 @@ class _MainLayoutState extends State<MainLayout> {
             size: 18,
             color: isDestructive ? Colors.red.shade500 : _textSecondary,
           ),
-          const SizedBox(width: 12),
+             SizedBox(width: 12),
           Flexible(
             child: Text(
               title,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Inter',
+              style:  GoogleFonts.montserrat(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isDestructive ? Colors.red.shade500 : _textPrimary,
@@ -544,12 +538,12 @@ class _MainLayoutState extends State<MainLayout> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Notifications'),
-        content: const Text('You have new notifications.'),
+        title:    Text('Notifications'),
+        content:    Text('You have new notifications.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child:    Text('Close'),
           ),
         ],
       ),
@@ -561,12 +555,12 @@ class _MainLayoutState extends State<MainLayout> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Messages'),
-        content: const Text('You have new messages.'),
+        title:    Text('Messages'),
+        content:    Text('You have new messages.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child:    Text('Close'),
           ),
         ],
       ),
@@ -581,24 +575,22 @@ void _showLogoutDialog(BuildContext context) {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text(
+            title:    Text(
               'Confirm Logout',
-              style: TextStyle(
-                fontFamily: 'Inter',
+              style:  GoogleFonts.montserrat(
                 fontWeight: FontWeight.w600,
               ),
             ),
-            content: const Text(
+            content:    Text(
               'Are you sure you want to logout?',
-              style: TextStyle(
-                fontFamily: 'Inter',
+              style:  GoogleFonts.montserrat(
                 fontWeight: FontWeight.w500,
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child:    Text('Cancel'),
               ),
               TextButton(
                 onPressed: ()async {
@@ -610,7 +602,7 @@ void _showLogoutDialog(BuildContext context) {
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.red,
                 ),
-                child: const Text('Logout'),
+                child:    Text('Logout'),
               ),
             ],
           ),
@@ -619,8 +611,8 @@ void _showLogoutDialog(BuildContext context) {
 
   Widget _buildUserProfileSection(Color primaryColor) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      padding: const EdgeInsets.all(10),
+      margin:    EdgeInsets.symmetric(horizontal: 10),
+      padding:    EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: primaryColor.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
@@ -641,32 +633,30 @@ void _showLogoutDialog(BuildContext context) {
                   color: primaryColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child:    Icon(
                   Icons.person_rounded,
                   color: Colors.white,
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 12),
+                 SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Zain Ali',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 16,
+                      style:  GoogleFonts.montserrat(
+                               fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: _textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                       SizedBox(height: 2),
                     Text(
                       'Full Stack Developer',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13,
+                      style:  GoogleFonts.montserrat(
+                               fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: _textSecondary,
                       ),
@@ -676,7 +666,7 @@ void _showLogoutDialog(BuildContext context) {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+             SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: TextButton(
@@ -684,16 +674,15 @@ void _showLogoutDialog(BuildContext context) {
               style: TextButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding:    EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
+              child:    Text(
                 'View Profile',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
+                style:  GoogleFonts.montserrat(
+                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -712,7 +701,7 @@ class _SideNavButton extends StatefulWidget {
   final bool isActive;
   final VoidCallback onTap;
 
-  const _SideNavButton({
+     _SideNavButton({
     required this.icon,
     required this.label,
     required this.isActive,
@@ -729,7 +718,7 @@ class _SideNavButtonState extends State<_SideNavButton> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final unselectedColor = const Color(0xFF5C738A);
+    final unselectedColor =    Color(0xFF5C738A);
 
     Color bgColor() {
       if (widget.isActive) {
@@ -760,10 +749,10 @@ class _SideNavButtonState extends State<_SideNavButton> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration:    Duration(milliseconds: 150),
           height: 48,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding:    EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: bgColor(),
             borderRadius: BorderRadius.circular(8),
@@ -771,7 +760,7 @@ class _SideNavButtonState extends State<_SideNavButton> {
           child: Row(
             children: [
               Icon(widget.icon, color: iconColor()),
-              const SizedBox(width: 12),
+                 SizedBox(width: 12),
               Text(
                 widget.label,
                 style: GoogleFonts.montserrat(
@@ -792,7 +781,7 @@ class _LogoutButton extends StatefulWidget {
   final VoidCallback onTap;
   final Key? key;
 
-  const _LogoutButton({
+     _LogoutButton({
     this.key,
     required this.onTap,
   }) : super(key: key);
@@ -806,7 +795,7 @@ class _LogoutButtonState extends State<_LogoutButton> {
 
   @override
   Widget build(BuildContext context) {
-    final unselectedColor = const Color(0xFF5C738A);
+    final unselectedColor =    Color(0xFF5C738A);
 
     Color bgColor() {
       if (_isHovered) return Colors.red.shade100;
@@ -832,11 +821,11 @@ class _LogoutButtonState extends State<_LogoutButton> {
         onTap: () => _logout(context),
 
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration:    Duration(milliseconds: 150),
           height: 48,
 
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding:    EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
 
             color: bgColor(),
@@ -845,7 +834,7 @@ class _LogoutButtonState extends State<_LogoutButton> {
           child: Row(
             children: [
               Icon(Icons.logout, color: iconColor()),
-              const SizedBox(width: 12),
+                 SizedBox(width: 12),
               Text(
                 'Logout',
                 style: GoogleFonts.montserrat(

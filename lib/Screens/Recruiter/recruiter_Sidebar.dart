@@ -25,7 +25,7 @@ class Recruiter_MainLayout extends StatefulWidget {
 class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
   bool _isFocused = false;
   final FocusNode _focusNode = FocusNode();
-  final Color _cardWhite = Color(0xFFFFFFFF);
+  final Color _cardWhite = Color(0xFFFAFAFA);
   final Color _textPrimary = Color(0xFF1E293B);
   final Color _textSecondary = Color(0xFF64748B);
   final Color _borderColor = Color(0xFFE2E8F0);
@@ -60,10 +60,9 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
 
   Widget _buildScaffold(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final backgroundGray = const Color(0xFFF5F8FA);
     final initials = context.watch<R_TopNavProvider>().initials;
     return Scaffold(
-      backgroundColor: backgroundGray,
+      backgroundColor: Color(0xFFFAFAFA),
       body: Row(
         children: [
           RepaintBoundary(
@@ -71,14 +70,8 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
               width: 240,
               height: double.infinity,
               decoration: BoxDecoration(
-                color: backgroundGray,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    offset: const Offset(2, 0), // Right-side shadow
-                    blurRadius: 4,
-                  ),
-                ],
+                color: Color(0xFFF5F5F5),
+
               ),
               child: ClipRRect(
                 // ensure rounded corners clip scrollable content
@@ -87,6 +80,7 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
                   padding: EdgeInsets.zero,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 24),
 
@@ -172,7 +166,7 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: _SideNavButton(
                           icon: Icons.broadcast_on_home_rounded,
-                          label: 'Schedule Interviews',
+                          label: 'Interviews',
                           isActive: widget.activeIndex == 2,
                           onTap: () {
                             if (widget.activeIndex != 2) {
@@ -257,135 +251,111 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
     );
   }
 
+  bool _isDarkMode = false;
+  int? _activeMenu; // 0 for Notifications, 1 for Messages, etc.
+
+// A helper for colors to support dark mode
+  Color get _iconColor => _isDarkMode ? Colors.grey.shade400 : _textSecondary;
+  Color get _iconHoverBg => _isDarkMode ? Colors.grey.shade800 : _hoverColor;
+  Color get _appBarBg => _isDarkMode ? Color(0xFF1E1E1E) : Color(0xFFF4F4F4);
+  Color get _appBarBorder => _isDarkMode ? Colors.grey.shade800 : _borderColor;
+
+
+
+
+
   Widget _buildTopBar(Color primaryColor, String initials) {
     return Container(
       height: 70,
-      width: 800,
+      width: 600, // It's better to let the parent control the width for responsiveness
       decoration: BoxDecoration(
-        color: _cardWhite,
+        color: _appBarBg, // Use dynamic color
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
         border: Border(
           bottom: BorderSide(
-            color: _borderColor,
+            color: _appBarBorder, // Use dynamic color
             width: 1,
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
         children: [
-          // ─── Enhanced Search Field ───
-          Expanded(
-            flex: 2,
-            child: Container(
-              height: 48,
-              constraints: const BoxConstraints(maxWidth: 480),
-              decoration: BoxDecoration(
-                color: _isSearchFocused ? _cardWhite : _hoverColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _isSearchFocused ? primaryColor : _borderColor,
-                  width: _isSearchFocused ? 2 : 1,
-                ),
-                boxShadow: _isSearchFocused
-                    ? [
-                        BoxShadow(
-                          color: primaryColor.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                style: GoogleFonts.montserrat(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: _textPrimary,
-                  height: 1.2,
-                ),
-                decoration: InputDecoration(
-                  filled: false,
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: _isSearchFocused ? primaryColor : _textSecondary,
-                    size: 20,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {});
-                          },
-                          icon: Icon(
-                            Icons.close_rounded,
-                            color: _textSecondary,
-                            size: 18,
-                          ),
-                          splashRadius: 16,
-                        )
-                      : null,
-                  hintText: 'Search jobs, companies, or keywords...',
-                  hintStyle: GoogleFonts.montserrat(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: _textSecondary,
-                    height: 1.2,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: (value) => setState(() {}),
-                onSubmitted: (value) {
-                  debugPrint('Search: $value');
-                },
-              ),
-            ),
-          ),
-
-          const Spacer(),
-
-          // ─── Quick Actions ───
+          // ─── Search Field (Unchanged as requested) ───
+          // ─── Action Widgets ───
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Notifications with badge
+              // --- NEW: Primary Action Button ---
+              _buildPrimaryActionButton(
+                text: 'Post a Job',
+                icon: Icons.add_circle_outline_rounded,
+                onPressed: () => print('Navigate to Post Job page'),
+              ),
+
+              const SizedBox(width: 24),
+
+              // --- NEW: Quick Links / Apps Menu ---
               _buildIconButton(
+                tooltip: 'Quick Links',
+                icon: Icons.apps_rounded,
+                onPressed: () => _showQuickLinks(context),
+                isActive: _activeMenu == 2,
+              ),
+
+              const SizedBox(width: 10),
+
+              // --- ENHANCED: Notifications with badge ---
+              _buildIconButton(
+                tooltip: 'Notifications',
                 icon: Icons.notifications_none_rounded,
-                onPressed: () => _showNotifications(context),
-                badge: 3, // Example badge count
+                activeIcon: Icons.notifications_rounded,
+                onPressed: () => setState(() => _activeMenu = 0),
+                badge: 3,
+                isActive: _activeMenu == 0,
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
 
-              // Messages
+              // --- ENHANCED: Messages ---
               _buildIconButton(
+                tooltip: 'Messages',
                 icon: Icons.chat_bubble_outline_rounded,
-                onPressed: () => _showMessages(context),
+                activeIcon: Icons.chat_bubble_rounded,
+                onPressed: () => setState(() => _activeMenu = 1),
+                isActive: _activeMenu == 1,
               ),
 
-              const SizedBox(width: 16),
+              // A visual separator for clarity
+              VerticalDivider(
+                  color: _appBarBorder,
+                  width: 32,
+                  thickness: 1,
+                  indent: 10,
+                  endIndent: 10),
 
-              // Profile Menu
+              // --- NEW: Help & Support ---
+              _buildIconButton(
+                tooltip: 'Help & Support',
+                icon: Icons.help_outline_rounded,
+                onPressed: () => _showHelpCenter(context),
+              ),
+
+              const SizedBox(width: 10),
+
+              // --- NEW: Theme Toggle ---
+              _buildIconButton(
+                tooltip: _isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                icon: _isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
+              ),
+
+              const SizedBox(width: 20),
+
+              // --- Profile Menu ---
               _buildProfileMenu(primaryColor, initials),
             ],
           ),
@@ -394,51 +364,99 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
     );
   }
 
-  Widget _buildIconButton({
+
+  /// Builds a new, prominent CTA button.
+  Widget _buildPrimaryActionButton({
+    required String text,
     required IconData icon,
     required VoidCallback onPressed,
-    int? badge,
   }) {
-    return Stack(
-      children: [
-        IconButton(
-          onPressed: onPressed,
-          icon: Icon(
-            icon,
-            color: _textSecondary,
-            size: 30,
-          ),
-          splashRadius: 20,
-          tooltip: 'Notifications',
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(text),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white, backgroundColor: Theme.of(context).primaryColor, // Text and icon color
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        if (badge != null && badge > 0)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.red.shade500,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 20,
-                minHeight: 20,
-              ),
-              child: Text(
-                badge > 99 ? '99+' : badge.toString(),
-                style: GoogleFonts.montserrat(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-      ],
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        textStyle: GoogleFonts.montserrat(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+      ),
     );
   }
+
+
+  /// A heavily enhanced icon button that supports hover, active states,
+  /// dynamic tooltips, and notification badges.
+  Widget _buildIconButton({
+    required String tooltip,
+    required IconData icon,
+    IconData? activeIcon, // Optional icon for the active state
+    required VoidCallback onPressed,
+    int? badge,
+    bool isActive = false,
+  }) {
+    final hoverProvider = ValueNotifier<bool>(false);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: hoverProvider,
+      builder: (context, isHovering, child) {
+        final isHighlighted = isHovering || isActive;
+        return Tooltip(
+          message: tooltip,
+          waitDuration: const Duration(milliseconds: 500),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              InkWell(
+                onTap: onPressed,
+                onHover: (value) => hoverProvider.value = value,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isHighlighted ? _iconHoverBg : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isActive ? (activeIcon ?? icon) : icon,
+                    color: isActive ? Theme.of(context).primaryColor : _iconColor,
+                    size: 24, // Standardized size
+                  ),
+                ),
+              ),
+              if (badge != null && badge > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade500,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _appBarBg, width: 2),
+                    ),
+                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                    child: Text(
+                      badge.toString(),
+                      style: GoogleFonts.montserrat(
+                          fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  void _showQuickLinks(BuildContext context) => print('Showing Quick Links menu');
+  void _showHelpCenter(BuildContext context) => print('Showing Help Center');
 
   Widget _buildProfileMenu(Color primaryColor, String initials) {
     return PopupMenuButton<String>(
@@ -473,7 +491,7 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
           context.go('/profile');
         }),
         _buildPopupMenuItem('Settings', Icons.settings_outlined, () {
-          // Handle settings
+          context.go('/');
         }),
         _buildPopupMenuItem('Help', Icons.help_outline_rounded, () {
           // Handle help
@@ -605,7 +623,7 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
 
-              context.pushReplacement('/login');
+              context.pushReplacement('/');
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
@@ -788,7 +806,7 @@ class _LogoutButtonState extends State<_LogoutButton> {
 
     Color bgColor() {
       if (_isHovered) return Colors.red.shade100;
-      return Color(0xFFF5F8FA);
+      return Color(0xFFF5F5F5);
     }
 
     Color iconColor() {
@@ -840,7 +858,7 @@ class _LogoutButtonState extends State<_LogoutButton> {
   Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     if (context.mounted) {
-      context.pushReplacement('/login');
+      context.pushReplacement('/');
     }
   }
 }

@@ -35,7 +35,7 @@ class HeaderNav extends StatelessWidget {
               // Simple nav items
               TextButton(
                 onPressed: () {
-context.go('/');                },
+context.pushReplacement('/');                },
                 child: Text(
                   'Home',
                   style: GoogleFonts.montserrat(

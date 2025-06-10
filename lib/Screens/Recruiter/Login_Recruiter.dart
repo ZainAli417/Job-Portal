@@ -9,7 +9,7 @@ import '../../main.dart';
 import '../../Constant/Header_Nav.dart';
 import '../Job_Seeker/Signup_Provider.dart';
 import '../Job_Seeker/login_provider.dart';
-
+import 'login_provider_Recruiter.dart';
 
 class Recruiter_LoginScreen extends StatefulWidget {
   const Recruiter_LoginScreen({super.key});
@@ -32,7 +32,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
     super.initState();
     // Fade in the form
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       setState(() {
+      setState(() {
         _opacity = 1;
       });
     });
@@ -56,30 +56,30 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
     ).show(context);
   }
 
+
   Future<void> _onLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = Provider.of<LoginProvider>(context, listen: false);
+    final provider = Provider.of<LoginProvider_Recruiter>(context, listen: false);
     final error = await provider.login(
       email: _email.text.trim(),
       password: _password.text,
-      expectedRole: 'Recruiter', // or 'recruiter'
+      expectedRole: 'Recruiter',
     );
 
 
     if (error != null) {
       _showFlushbar(context, error, true);
-    } else {
+    }
+    else {
       _showFlushbar(context, "Login Successful!", false);
-      Future.delayed(const Duration(seconds: 1), ()
-      {
+      Future.delayed(const Duration(seconds: 1), () {
 
         context.pushReplacement('/recruiter-dashboard');
-      }
-      );
+      });
     }
-  }
 
+  }
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
@@ -89,10 +89,9 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
       body: Column(
         children: [
           const HeaderNav(),
-
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(180,5,180,5),
+              padding: const EdgeInsets.fromLTRB(180, 5, 180, 5),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth > 800;
@@ -115,7 +114,6 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                       // ───── RIGHT COLUMN: LOGIN FORM ─────
                       Expanded(
                         flex: isWide ? 1 : 0,
-
                         child: Center(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 700),
@@ -131,7 +129,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment:
-                                  CrossAxisAlignment.stretch,
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     // ─── Heading ───
                                     Center(
@@ -150,7 +148,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                     // ─── Email Field ───
                                     Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Email",
@@ -165,7 +163,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                           controller: _email,
                                           hintText: "johndoe@email.com",
                                           keyboardType:
-                                          TextInputType.emailAddress,
+                                              TextInputType.emailAddress,
                                           suffixIcon: Icons.email_outlined,
                                           isEmail: true,
                                         ),
@@ -176,7 +174,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                     // ─── Password Field ───
                                     Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Password",
@@ -201,12 +199,11 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                             hintText: "Enter your password",
                                             hintStyle: GoogleFonts.montserrat(
                                                 color: Color(0xff5C738A),
-                                                fontWeight: FontWeight.w400
-                                            ),
+                                                fontWeight: FontWeight.w400),
                                             filled: true,
                                             fillColor: Color(0xffEBEDF2),
                                             contentPadding:
-                                            const EdgeInsets.symmetric(
+                                                const EdgeInsets.symmetric(
                                               vertical: 12,
                                               horizontal: 16,
                                             ),
@@ -220,27 +217,27 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                               onPressed: () {
                                                 setState(() {
                                                   _obscurePassword =
-                                                  !_obscurePassword;
+                                                      !_obscurePassword;
                                                 });
                                               },
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius:
-                                              BorderRadius.circular(12),
+                                                  BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.grey.shade200,
                                               ),
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                              BorderRadius.circular(12),
+                                                  BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.grey.shade200,
                                               ),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                              BorderRadius.circular(12),
+                                                  BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: primaryColor,
                                                 width: 2,
@@ -248,16 +245,16 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                             ),
                                             errorBorder: OutlineInputBorder(
                                               borderRadius:
-                                              BorderRadius.circular(12),
+                                                  BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.red,
                                                 width: 2,
                                               ),
                                             ),
                                             focusedErrorBorder:
-                                            OutlineInputBorder(
+                                                OutlineInputBorder(
                                               borderRadius:
-                                              BorderRadius.circular(12),
+                                                  BorderRadius.circular(12),
                                               borderSide: BorderSide(
                                                 color: Colors.red,
                                                 width: 2,
@@ -270,54 +267,69 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                     const SizedBox(height: 32),
 
                                     // ─── Login Button ───
-                                    Consumer<LoginProvider>(
+                                    Consumer<LoginProvider_Recruiter>(
                                       builder: (_, provider, __) {
                                         return Align(
-                                          alignment: Alignment.center, // prevent full-width stretch
+                                          alignment: Alignment
+                                              .center, // prevent full-width stretch
                                           child: SizedBox(
                                             height: 50,
-                                            width: 300, // adjust to desired narrower width
+                                            width:
+                                                300, // adjust to desired narrower width
                                             child: ElevatedButton(
-                                              onPressed: provider.isLoading ? () {} : _onLogin, // keep enabled to preserve color
+                                              onPressed: provider.isLoading
+                                                  ? () {}
+                                                  : _onLogin, // keep enabled to preserve color
                                               style: ButtonStyle(
-                                                backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                                                      (states) {
+                                                backgroundColor:
+                                                    WidgetStateProperty
+                                                        .resolveWith<Color>(
+                                                  (states) {
                                                     if (provider.isLoading) {
-                                                      return primaryColor.withOpacity(0.7);
+                                                      return primaryColor
+                                                          .withOpacity(0.7);
                                                     }
                                                     return primaryColor;
                                                   },
                                                 ),
                                                 // ensure the disabled/pressed states don’t default to grey:
-                                                foregroundColor: WidgetStateProperty.all(Colors.white),
-                                                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                                                foregroundColor:
+                                                    WidgetStateProperty.all(
+                                                        Colors.white),
+                                                shape: WidgetStateProperty.all<
+                                                    RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(25),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25),
                                                   ),
                                                 ),
-                                                elevation: WidgetStateProperty.all(0),
+                                                elevation:
+                                                    WidgetStateProperty.all(0),
                                               ),
                                               child: provider.isLoading
                                                   ? const SizedBox(
-                                                width: 24,
-                                                height: 24,
-                                                child: CircularProgressIndicator(
-                                                  color: Colors.white,
-                                                  strokeWidth: 2,
-                                                ),
-                                              )
+                                                      width: 24,
+                                                      height: 24,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2,
+                                                      ),
+                                                    )
                                                   : Text(
-                                                "Login",
-                                                style: GoogleFonts.montserrat(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
+                                                      "Login",
+                                                      style: GoogleFonts
+                                                          .montserrat(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
                                             ),
                                           ),
                                         );
-
                                       },
                                     ),
                                     const SizedBox(height: 16),
@@ -325,7 +337,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                     // ─── Forgot & "New here? Create Account" Row ───
                                     Row(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                       children: [
                                         TextButton(
                                           onPressed: () {
@@ -368,11 +380,8 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                     ],
                   );
                 },
-
               ),
-
             ),
-
           ),
         ],
       ),
@@ -395,7 +404,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
       keyboardType: keyboardType,
       obscureText: false,
       validator: validator ??
-              (val) {
+          (val) {
             if (val == null || val.trim().isEmpty) return "Required";
             if (isEmail && !val.contains("@")) return "Enter valid email";
             return null;

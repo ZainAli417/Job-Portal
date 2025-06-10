@@ -9,7 +9,9 @@ import 'Screens/Job_Seeker/Profile_Provider.dart';
 import 'Screens/Job_Seeker/Signup_Provider.dart';
 import 'Screens/Job_Seeker/login_provider.dart';
 import 'Screens/Recruiter/Signup_Provider_Recruiter.dart';
+import 'Screens/Recruiter/job_posting_provider.dart';
 import 'Screens/Recruiter/login_provider_Recruiter.dart';
+import 'Screens/Recruiter/sidebar_provider.dart';
 import 'Top_Nav_Provider.dart';
 import 'Web_routes.dart';
 import 'firebase_options.dart';
@@ -48,6 +50,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TopNavProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => AuthNotifier()),
+        ChangeNotifierProvider(create: (_) => R_TopNavProvider()),
+        ChangeNotifierProvider(create: (_) => JobPostingProvider()),
 
       ],
       child: const JobPortalApp(),
@@ -74,7 +78,7 @@ class JobPortalApp extends StatelessWidget {
         textTheme: GoogleFonts.montserratTextTheme(),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey[200],
+          fillColor: Color(0xFFFAFAFA),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
