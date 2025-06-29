@@ -7,9 +7,10 @@ import 'package:provider/provider.dart';
 import 'Constant/Forget Password Provider.dart';
 import 'Screens/Job_Seeker/Profile_Provider.dart';
 import 'Screens/Job_Seeker/Signup_Provider.dart';
+import 'Screens/Job_Seeker/job_seeker_provider.dart';
 import 'Screens/Job_Seeker/login_provider.dart';
 import 'Screens/Recruiter/Signup_Provider_Recruiter.dart';
-import 'Screens/Recruiter/job_posting_provider.dart';
+import 'Screens/Recruiter/Recruiter_provider.dart';
 import 'Screens/Recruiter/login_provider_Recruiter.dart';
 import 'Screens/Recruiter/sidebar_provider.dart';
 import 'Top_Nav_Provider.dart';
@@ -25,15 +26,14 @@ void main() async {
   );
 
   // ─── If targeting web, you can reintroduce URL strategy here:
-  ;
   if (kIsWeb) {
      setUrlStrategy(PathUrlStrategy());
   }
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    // Precache a dummy Montserrat text so it’s ready immediately
+    // Precache a dummy inter text so it’s ready immediately
     TextPainter(
-      text: TextSpan(text: " ", style: GoogleFonts.montserrat()),
+      text: TextSpan(text: " ", style: GoogleFonts.inter()),
       textDirection: TextDirection.ltr,
     ).layout();
   });
@@ -52,6 +52,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthNotifier()),
         ChangeNotifierProvider(create: (_) => R_TopNavProvider()),
         ChangeNotifierProvider(create: (_) => JobPostingProvider()),
+        ChangeNotifierProvider(create: (_) => job_seeker_provider()),
 
       ],
       child: const JobPortalApp(),
@@ -69,13 +70,13 @@ class JobPortalApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: ThemeData(
-        primaryColor: const Color(0xFF006CFF),
+        primaryColor: const Color(0xFF003366),
         colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: const Color(0xFF006CFF),
-          secondary: const Color(0xFF006CFF),
+          primary: const Color(0xFF003366),
+          secondary: const Color(0xFF003366),
         ),
-        fontFamily: GoogleFonts.montserrat().fontFamily,
-        textTheme: GoogleFonts.montserratTextTheme(),
+        fontFamily: GoogleFonts.inter().fontFamily,
+        textTheme: GoogleFonts.interTextTheme(),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Color(0xFFFAFAFA),
@@ -87,7 +88,7 @@ class JobPortalApp extends StatelessWidget {
         buttonTheme: ButtonThemeData(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          buttonColor: const Color(0xFF006CFF),
+          buttonColor: const Color(0xFF003366),
           textTheme: ButtonTextTheme.primary,
         ),
       ),

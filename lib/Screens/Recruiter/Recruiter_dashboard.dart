@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'job_posting_provider.dart';
+import 'Recruiter_provider.dart';
 
 class JobsDashboard extends StatefulWidget {
-  const JobsDashboard({Key? key}) : super(key: key);
+  const JobsDashboard({super.key});
 
   @override
   State<JobsDashboard> createState() => _JobsDashboardState();
@@ -400,7 +400,7 @@ class _JobsDashboardState extends State<JobsDashboard> with TickerProviderStateM
   }
 
   Widget _HeaderCell(String title, double width) {
-    return Container(
+    return SizedBox(
       width: width,
       child: Text(
         title,
@@ -488,7 +488,7 @@ class _FilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 160,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -664,7 +664,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildStatusColumn(bool isActive) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.statusWidth,
       child: Row(
         children: [
@@ -701,7 +701,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildJobTitleColumn(String title, String company, String postedAgo) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.jobTitleWidth,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,7 +744,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildQualificationColumn(String qualifications) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.qualificationWidth,
       child: Text(
         qualifications,
@@ -760,7 +760,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildDepartmentColumn(String department) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.departmentWidth,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -785,7 +785,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildLocationColumn(String location) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.locationWidth,
       child: Row(
         children: [
@@ -809,7 +809,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildExperienceColumn(String experience) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.experienceWidth,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -834,7 +834,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildSalaryColumn(String pay) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.salaryWidth,
       child: Row(
         children: [
@@ -858,7 +858,7 @@ class _JobListItemState extends State<_JobListItem> {
   }
 
   Widget _buildWorkModeColumn(List<String> workModes) {
-    return Container(
+    return SizedBox(
       width: _JobsDashboardState.workModeWidth,
       child: workModes.isNotEmpty
           ? Container(

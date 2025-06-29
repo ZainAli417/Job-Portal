@@ -1,5 +1,4 @@
 // cv_generator.dart
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For rootBundle
 import 'package:intl/intl.dart';
@@ -11,7 +10,7 @@ import 'package:printing/printing.dart';
 import '../Screens/Job_Seeker/Profile_Provider.dart';
 
 class CVGeneratorDialog extends StatelessWidget {
-  const CVGeneratorDialog({Key? key}) : super(key: key);
+  const CVGeneratorDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -114,19 +113,19 @@ class CVGeneratorDialog extends StatelessWidget {
                     icon: const Icon(Icons.picture_as_pdf, size: 18),
                     label: const Text('Download CV'),
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith(
+                      backgroundColor: WidgetStateProperty.resolveWith(
                             (states) {
                           if (!isComplete) return Colors.grey;
                           return Theme.of(context).primaryColor;
                         },
                       ),
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                      shape: MaterialStateProperty.all(
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
-                      elevation: MaterialStateProperty.all(4),
-                      padding: MaterialStateProperty.all(
+                      elevation: WidgetStateProperty.all(4),
+                      padding: WidgetStateProperty.all(
                         const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
                       ),
@@ -267,7 +266,7 @@ class CVGeneratorDialog extends StatelessWidget {
                   pw.SizedBox(height: 6),
                 ],
               );
-            }).toList(),
+            }),
 
             pw.SizedBox(height: 16),
 
@@ -305,7 +304,7 @@ class CVGeneratorDialog extends StatelessWidget {
                   pw.SizedBox(height: 6),
                 ],
               );
-            }).toList(),
+            }),
 
             pw.SizedBox(height: 16),
 
@@ -325,7 +324,7 @@ class CVGeneratorDialog extends StatelessWidget {
                 '${cert['certName']} — ${cert['certInstitution']} (${cert['certYear']})',
                 style: pw.TextStyle(font: regular, fontSize: 12),
               );
-            }).toList(),
+            }),
 
             pw.SizedBox(height: 16),
 

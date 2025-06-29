@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Constant/Profile_Sidebar.dart';
@@ -14,224 +12,373 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _slideController;
-  late AnimationController _fadeController;
-  late Animation<Offset> _slideAnimation;
+class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateMixin {
+  late TabController _tabController;
+  late AnimationController _animController;
   late Animation<double> _fadeAnimation;
 
-  final Color addcolor = Color(0xFF006CFF);
+  // Controllers for personal fields
+  late final TextEditingController _summaryCtrl;
+  late final TextEditingController _firstNameCtrl;
+  late final TextEditingController _lastNameCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _locationCtrl;
+  late final TextEditingController _rankCtrl;
+
+  // Controllers for service (education) tab
+  late final TextEditingController _unitCtrl;
+  late final TextEditingController _positionCtrl;
+  late final TextEditingController _afscCtrl;
+  late final TextEditingController _serviceStartCtrl;
+  late final TextEditingController _serviceEndCtrl;
+
+  // Controllers for flight tab
+  late final TextEditingController _aircraftCtrl;
+  late final TextEditingController _flightHoursCtrl;
+  late final TextEditingController _flightCountCtrl;
+  late final TextEditingController _missionTypeCtrl;
+  late final TextEditingController _flightDescCtrl;
+
+  // Controllers for training tab
+  late final TextEditingController _courseCtrl;
+  late final TextEditingController _institutionCtrl;
+  late final TextEditingController _completionYearCtrl;
+
+  bool _didLoad = false;
 
   @override
   void initState() {
     super.initState();
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
+    _tabController = TabController(length: 6, vsync: this);
+    _animController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animController);
+    _animController.forward();
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
-
-    // Start animations
-    _slideController.forward();
-    _fadeController.forward();
+    // initialize all your TextEditingController objects:
+    _summaryCtrl         = TextEditingController();
+    _firstNameCtrl       = TextEditingController();
+    _lastNameCtrl        = TextEditingController();
+    _emailCtrl           = TextEditingController();
+    _phoneCtrl           = TextEditingController();
+    _locationCtrl        = TextEditingController();
+    _rankCtrl            = TextEditingController();
+    _unitCtrl            = TextEditingController();
+    _positionCtrl        = TextEditingController();
+    _afscCtrl            = TextEditingController();
+    _serviceStartCtrl    = TextEditingController();
+    _serviceEndCtrl      = TextEditingController();
+    _aircraftCtrl        = TextEditingController();
+    _flightHoursCtrl     = TextEditingController();
+    _flightCountCtrl     = TextEditingController();
+    _missionTypeCtrl     = TextEditingController();
+    _flightDescCtrl      = TextEditingController();
+    _courseCtrl          = TextEditingController();
+    _institutionCtrl     = TextEditingController();
+    _completionYearCtrl  = TextEditingController();
   }
 
   @override
-  void dispose() {
-    _slideController.dispose();
-    _fadeController.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didLoad) {
+      _didLoad = true;
+      final prov = context.read<ProfileProvider>();
+      prov.loadAllSectionsOnce().then((_) {
+        // populate controllers from provider
+        _summaryCtrl.text      = prov.summary;
+        _firstNameCtrl.text    = prov.firstName;
+        _lastNameCtrl.text     = prov.lastName;
+        _emailCtrl.text        = prov.email;
+        _phoneCtrl.text        = prov.phone;
+        _locationCtrl.text     = prov.location;
+        _rankCtrl.text         = prov.current_job;
+
+        _unitCtrl.text         = prov.tempSchool;
+        _positionCtrl.text     = prov.tempDegree;
+        _afscCtrl.text         = prov.tempFieldOfStudy;
+        _serviceStartCtrl.text = prov.tempEduStart;
+        _serviceEndCtrl.text   = prov.tempEduEnd;
+
+        _aircraftCtrl.text     = prov.tempCompany;
+        _flightHoursCtrl.text  = prov.tempRole;
+        _flightCountCtrl.text  = prov.tempExpStart;
+        _missionTypeCtrl.text  = prov.tempExpEnd;
+        _flightDescCtrl.text   = prov.tempExpDescription;
+
+        _courseCtrl.text       = prov.tempCertName;
+        _institutionCtrl.text  = prov.tempCertInstitution;
+        _completionYearCtrl.text = prov.tempCertYear;
+
+        setState(() {});
+      });
+    }
   }
 
-  @override
+  void _nextTab() {
+    if (_tabController.index < 5) {
+      _tabController.animateTo(_tabController.index + 1);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ProfileProvider(),
       child: MainLayout(
         activeIndex: 1,
-        child: AnimatedBuilder(
-          animation: _slideAnimation,
-          builder: (context, child) {
-            return SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Consumer<ProfileProvider>(
-                    builder: (context, provider, _) {
-                      // If data is still loading, show a spinner
-                      if (provider.isLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-
-                      // Once loaded, show two‐column layout:
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Left column: existing tabs/form
-                          Flexible(
-                            flex: 2,
-                            child: Form(
-                              key: provider.formKey,
-                              child: DefaultTabController(
-                                // Updated to 6 because we now have 6 tabs
-                                length: 6,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildHeader(),
-                                    const SizedBox(height: 16),
-                                    _buildTabBar(context),
-                                    const SizedBox(height: 24),
-                                    Expanded(
-                                      child: TabBarView(
-                                        physics: const BouncingScrollPhysics(),
-                                        children: [
-                                          _buildProfileSummaryTab(provider),
-                                          _buildEducationalSummaryTab(provider,context),
-                                          _buildProfessionalExperienceTab(provider,context),
-                                          _buildCertificationsTab(provider,context),
-                                          _buildSkillsTab(provider, context), // pass context
-                                          _buildAttachmentsTab(context),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Container(
+            color: Colors.grey.shade50,
+            padding: const EdgeInsets.all(24),
+            child: Consumer<ProfileProvider>(
+              builder: (context, provider, _) {
+                if (provider.errorMessage.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(provider.errorMessage),
+                          backgroundColor: Colors.red,
+                          action: SnackBarAction(
+                            label: 'Retry',
+                            textColor: Colors.white,
+                            onPressed: () => provider.forceReload(),
                           ),
-
-                          const SizedBox(width: 24),
-
-                          // Right column: sidebar
-                          Flexible(
-                            flex: 1,
-                            child: ProfileSidebar(provider: provider),
-                          ),
-                        ],
+                        ),
                       );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
+                    }
+                  });
+                }
+
+                return provider.isLoading
+                    ? _buildLoadingState()
+                    : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: _buildMainContent(provider)),
+                    const SizedBox(width: 32),
+                    Flexible(child: ProfileSidebar(provider: provider)),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF003366)),
+          const SizedBox(height: 16),
+          Text(
+            'Loading your profile...',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent(ProfileProvider prov) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(),
+        const SizedBox(height: 32),
+        _buildTabBar(),
+        const SizedBox(height: 24),
+        Expanded(child: _buildTabContent(prov)),
+      ],
+    );
+  }
 
   Widget _buildHeader() {
-    return Hero(
-      tag: 'profile_header',
-      child: Material(
-        type: MaterialType.transparency,
-        child: Text(
-          'Job Seeker Profile',
-          style: GoogleFonts.montserrat(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Personnel Profile',
+          style: GoogleFonts.inter(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade900,
+            letterSpacing: -0.5,
           ),
         ),
-      ),
+        const SizedBox(height: 8),
+        Text(
+          'Complete your service information and records',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildTabBar(BuildContext context) {
+  Widget _buildTabBar() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
       child: TabBar(
+        controller: _tabController,
         isScrollable: true,
-        indicatorColor: Theme.of(context).primaryColor,
-        indicatorWeight: 3,
-        indicatorSize: TabBarIndicatorSize.label,
-        labelColor: Colors.black87,
-        unselectedLabelColor: const Color(0xFF5C738A),
-        labelStyle: GoogleFonts.montserrat(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: GoogleFonts.montserrat(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        splashFactory: InkRipple.splashFactory,
-        overlayColor: WidgetStateProperty.all(
-          Theme.of(context).primaryColor.withOpacity(0.1),
-        ),
+        indicatorColor: const Color(0xFF003366),
+        indicatorWeight: 2,
+        labelColor: const Color(0xFF024095),
+        unselectedLabelColor: Colors.grey.shade600,
+        labelStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
+        dividerColor: Colors.transparent,
+        tabAlignment: TabAlignment.start,
         tabs: const [
-          Tab(text: 'Profile Summary'),
-          Tab(text: 'Educational Summary'),
-          Tab(text: 'Professional Experience'),
-          Tab(text: 'Certifications'),
-          Tab(text: 'Skills & Interests'),
-          Tab(text: 'Attachments'),
+          Tab(text: 'Personal Information'),
+          Tab(text: 'Military Service'),
+          Tab(text: 'Flight Records'),
+          Tab(text: 'Training & Education'),
+          Tab(text: 'Specialties'),
+          Tab(text: 'Documents'),
         ],
       ),
     );
   }
 
-  Widget _buildAttachmentsTab(BuildContext context) {
+  Widget _buildTabContent(ProfileProvider prov) {
+    return Form(
+      key: prov.formKey,
+      child: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildPersonalTab(prov),
+          _buildServiceTab(prov),
+          _buildFlightTab(prov),
+          _buildTrainingTab(prov),
+          _buildSkillsTab(prov),
+          _buildDocsTab(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalTab(ProfileProvider prov) {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutBack,
-            child: Text(
-              'Upload Supporting Documents (If Any)',
-              style: GoogleFonts.montserrat(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+          _buildField('Service Summary',
+            TextFormField(
+              controller: _summaryCtrl,
+              maxLines: 4,
+              decoration: _fieldDecoration('Brief summary of your Air Force service and achievements'),
+              validator: (v) => v?.isEmpty ?? true ? 'Service summary is required' : null,
+              onChanged: (v) {
+                prov.updateSummary(v);
+                prov.markPersonalDirty();
+              },
             ),
           ),
-          const SizedBox(height: 24),
-          Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 800),
-              curve: Curves.elasticOut,
-             child: _buildAnimatedUploadButton(context),
+          _buildRowFields([
+            _buildField('First Name',
+              TextFormField(
+                controller: _firstNameCtrl,
+                decoration: _fieldDecoration('Enter first name'),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                onChanged: (v) {
+                  prov.updateFirstName(v);
+                  prov.markPersonalDirty();
+                },
+              ),
+            ),
+            _buildField('Last Name',
+              TextFormField(
+                controller: _lastNameCtrl,
+                decoration: _fieldDecoration('Enter last name'),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                onChanged: (v) {
+                  prov.updateLastName(v);
+                  prov.markPersonalDirty();
+                },
+              ),
+            ),
+          ]),
+          _buildRowFields([
+            _buildField('Service Number',
+              TextFormField(
+                controller: _emailCtrl,
+                decoration: _fieldDecoration('AF123456789'),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                onChanged: (v) {
+                  prov.updateEmail(v);
+                  prov.markPersonalDirty();
+                },
+              ),
+            ),
+            _buildField('Contact Number',
+              TextFormField(
+                controller: _phoneCtrl,
+                decoration: _fieldDecoration('+1 234 567 890'),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                onChanged: (v) {
+                  prov.updatePhone(v);
+                  prov.markPersonalDirty();
+                },
+              ),
+            ),
+          ]),
+          _buildRowFields([
+            _buildField('Current Base/Station',
+              TextFormField(
+                controller: _locationCtrl,
+                decoration: _fieldDecoration('e.g. Edwards AFB, CA'),
+                onChanged: (v) {
+                  prov.updateLocation(v);
+                  prov.markPersonalDirty();
+                },
+              ),
+            ),
+            _buildField('Current Rank',
+              TextFormField(
+                controller: _rankCtrl,
+                decoration: _fieldDecoration('e.g. Captain, Major, Colonel'),
+                onChanged: (v) {
+                  prov.updatecurrent_job(v);
+                  prov.markPersonalDirty();
+                },
+              ),
+            ),
+          ]),
+          const SizedBox(height: 20),
+          Selector<ProfileProvider, Color>(
+            selector: (_, p) => p.getButtonColorForSection('personal'),
+            builder: (_, color, __) => SizedBox(
+              width: 200,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (prov.formKey.currentState!.validate()) {
+                    prov.savePersonalSection(context);
+                    Future.delayed(const Duration(milliseconds: 200), _nextTab);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Save & Continue'),
+              ),
             ),
           ),
         ],
@@ -239,1156 +386,572 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildResponsiveRow(List<Widget> children) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth > 800) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: children
-                .map((child) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: child,
-                      ),
-                    ))
-                .toList(),
-          );
-        } else {
-          return Column(
-            children: children
-                .map((child) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: child,
-                    ))
-                .toList(),
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildAnimatedField({
-    required String label,
-    required Widget child,
-  }) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 500),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOutBack,
-      builder: (context, value, _) {
-        return Transform.scale(
-          scale: value,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLabel(label),
-              const SizedBox(height: 8),
-              child,
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.montserrat(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: Colors.black87,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String initialValue,
-    required String hint,
-    IconData? icon,
-    bool isEmail = false,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-    void Function(String)? onChanged,
-    required void Function(String?) onSaved,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      child: TextFormField(
-        initialValue: initialValue,
-        keyboardType: keyboardType,
-        validator: validator ??
-            (val) {
-              if (val == null || val.trim().isEmpty) return 'Required';
-              if (isEmail && !val.contains('@')) return 'Enter valid email';
-              return null;
-            },
-        onChanged: onChanged,
-        onSaved: onSaved,
-        decoration: InputDecoration(
-          hintText: hint,
-          prefixIcon: icon != null
-              ? Icon(icon, color: const Color(0xFF5C738A), size: 20)
-              : null,
-          hintStyle: GoogleFonts.montserrat(
-            color: const Color(0xFF5C738A),
-            fontWeight: FontWeight.w400,
-          ),
-          filled: true,
-          fillColor: const Color(0xFFEBEDF2),
-          contentPadding: EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: icon != null ? 12 : 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(
-              color: Color(0xFF006CFF),
-              width: 2,
-            ),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMulti_Line_TextArea({
-    required String initialValue,
-    required String hint,
-    String? Function(String?)? validator,
-    void Function(String)? onChanged,
-    required void Function(String?) onSaved,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      child: TextFormField(
-        initialValue: initialValue,
-        maxLines: 4,
-        validator: validator ??
-            (val) {
-              if (val == null || val.trim().isEmpty) return 'Required';
-              return null;
-            },
-        onChanged: onChanged,
-        onSaved: onSaved,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: GoogleFonts.montserrat(
-            color: const Color(0xFF5C738A),
-            fontWeight: FontWeight.w400,
-          ),
-          filled: true,
-          fillColor: const Color(0xFFEBEDF2),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 16,
-            horizontal: 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(
-              color: Color(0xFF006CFF),
-              width: 2,
-            ),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
-          ),
-        ),
-      ),
-    );
-  }
-
-    Widget _buildAnimatedUploadButton(BuildContext context) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-             BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-             ),
-            ],
-          ),
-         child: ElevatedButton.icon(
-            onPressed: () {
-              // File picker logic here
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                     const Text('File picker functionality to be implemented'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
-            },
-           icon: const Icon(Icons.upload_file_outlined, color: Colors.white),
-            label: Text(
-              'Choose File',
-             style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.hovered)) {
-                  return Theme.of(context).primaryColor.withOpacity(0.8);
-                }
-                return Theme.of(context).primaryColor;
-              }),
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-             )),
-              elevation: WidgetStateProperty.all(0),
-              overlayColor: WidgetStateProperty.all(
-                Colors.white.withOpacity(0.1),
-              ),
-              padding: WidgetStateProperty.all(
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-            ),
-          ),
-        );
-      }
-
-
-  Widget _buildSkillsTab(ProfileProvider provider, BuildContext context) {
+  Widget _buildServiceTab(ProfileProvider prov) {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildAnimatedField(
-            label: 'Add a Skill',
-
-            child: TextFormField(
-              //
-              // Use the provider’s controller rather than initialValue:
-              controller: provider.skillController,
-              decoration: InputDecoration(
-                hintText: 'Enter a skill and press Add',
-                hintStyle: GoogleFonts.montserrat(
-                  color: const Color(0xFF5C738A),
-                  fontWeight: FontWeight.w400,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFEBEDF2),
-                contentPadding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF006CFF),
-                    width: 2,
-                  ),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.red, width: 2),
-                ),
-              ),
-              onFieldSubmitted: (_) => provider.addSkillEntry(context),
-              onChanged: (val) => provider.updateTempSkill(val),
-              validator: (val) => null,
+          _buildField('Unit/Squadron',
+            TextFormField(
+              controller: _unitCtrl,
+              decoration: _fieldDecoration('e.g. 1st Fighter Squadron'),
+              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+              onChanged: (v) {
+                prov.updateTempSchool(v);
+                prov.markEducationDirty();
+              },
             ),
           ),
-
-          const SizedBox(height: 16),
+          _buildRowFields([
+            _buildField('Position/Role',
+              TextFormField(
+                controller: _positionCtrl,
+                decoration: _fieldDecoration('e.g. Pilot, Navigator, Crew Chief'),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                onChanged: (v) {
+                  prov.updateTempDegree(v);
+                  prov.markEducationDirty();
+                },
+              ),
+            ),
+            _buildField('Specialty Code (AFSC)',
+              TextFormField(
+                controller: _afscCtrl,
+                decoration: _fieldDecoration('e.g. 11F, 12F, 2A3X3'),
+                onChanged: (v) {
+                  prov.updateTempFieldOfStudy(v);
+                  prov.markEducationDirty();
+                },
+              ),
+            ),
+          ]),
+          _buildRowFields([
+            _buildField('Start Date',
+              TextFormField(
+                controller: _serviceStartCtrl,
+                decoration: _fieldDecoration('MM/YYYY'),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+                onChanged: (v) {
+                  prov.updateTempEduStart(v);
+                  prov.markEducationDirty();
+                },
+              ),
+            ),
+            _buildField('End Date',
+              TextFormField(
+                controller: _serviceEndCtrl,
+                decoration: _fieldDecoration('MM/YYYY or Current'),
+                onChanged: (v) {
+                  prov.updateTempEduEnd(v);
+                  prov.markEducationDirty();
+                },
+              ),
+            ),
+          ]),
+          const SizedBox(height: 20),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: Alignment.centerLeft,
             child: TextButton.icon(
-              onPressed: () => provider.addSkillEntry(context),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Skill'),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  addcolor.withOpacity(0.05),
-                ),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
-              ),
+              onPressed: () => prov.addEducationEntry(context),
+              icon: const Icon(Icons.add, size: 16),
+              label: Text('Add Service Record', style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: Colors.black87)),
+              style: TextButton.styleFrom(foregroundColor: const Color(0xFF003366).withOpacity(0.5), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
             ),
-
           ),
-
-          const SizedBox(height: 24),
-          if (provider.skillsList.isEmpty)
-            Center(
-              child: Text(
-                'No skills added yet.',
-                style: GoogleFonts.montserrat(color: Colors.grey.shade600),
+          _buildListItems(prov.educationList, 'education'),
+          const SizedBox(height: 40),
+          Selector<ProfileProvider, Color>(
+            selector: (_, p) => p.getButtonColorForSection('education'),
+            builder: (_, color, __) => SizedBox(
+              width: 200,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (prov.formKey.currentState!.validate()) {
+                    prov.saveEducationSection(context);
+                    Future.delayed(const Duration(milliseconds: 200), _nextTab);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Save & Continue'),
               ),
-            )
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: provider.skillsList.map((skill) {
-                return Chip(
-                  label: Text(
-                    skill,
-                    style: GoogleFonts.montserrat(color: Colors.white),
-                  ),
-                  backgroundColor:CupertinoColors.activeGreen,
-                  deleteIcon:
-                  const Icon(Icons.close, size: 18, color: Colors.white),
-                  onDeleted: () {
-                    provider.skillsList.remove(skill);
-                    provider.markSkillsDirty();
-                    provider.notifyListeners();
-                  },
-                );
-              }).toList(),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 24),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
+  Widget _buildFlightTab(ProfileProvider prov) {
+    return SingleChildScrollView(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildField('Aircraft Type',
+          TextFormField(
+            controller: _aircraftCtrl,
+            decoration: _fieldDecoration('e.g. F-16C, C-130J, KC-135'),
+            validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+            onChanged: (v) {
+              prov.updateTempCompany(v);
+              prov.markExperienceDirty();
+            },
+          ),
+        ),
+        _buildRowFields([
+          _buildField('Total Flight Hours',
+            TextFormField(
+              controller: _flightHoursCtrl,
+              decoration: _fieldDecoration('e.g. 1500.5'),
+              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+              onChanged: (v) {
+                prov.updateTempRole(v);
+                prov.markExperienceDirty();
+              },
+            ),
+          ),
+          _buildField('Number of Flights',
+            TextFormField(
+              controller: _flightCountCtrl,
+              decoration: _fieldDecoration('e.g. 450'),
+              onChanged: (v) {
+                prov.updateTempExpStart(v);
+                prov.markExperienceDirty();
+              },
+            ),
+          ),
+        ]),
+        _buildField('Mission Type',
+          TextFormField(
+            controller: _missionTypeCtrl,
+            decoration: _fieldDecoration('Combat, Training, Transport'),
+            onChanged: (v) {
+              prov.updateTempExpEnd(v);
+              prov.markExperienceDirty();
+            },
+          ),
+        ),
+        _buildField('Flight Experience Details',
+          TextFormField(
+            controller: _flightDescCtrl,
+            maxLines: 3,
+            decoration: _fieldDecoration('Describe your flight experience, missions, and achievements'),
+            validator: (v) => v?.isEmpty ?? true ? 'Flight experience is required' : null,
+            onChanged: (v) {
+              prov.updateTempExpDescription(v);
+              prov.markExperienceDirty();
+            },
+          ),
+        ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => prov.addExperienceEntry(context),
+            icon: const Icon(Icons.add, size: 16),
+            label: Text('Add Flight Record', style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: Colors.black87)),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF003366).withOpacity(0.5), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+          ),
+        ),
+        _buildListItems(prov.experienceList, 'experience'),
+        const SizedBox(height: 10),
+        Selector<ProfileProvider, Color>(
+          selector: (_, p) => p.getButtonColorForSection('experience'),
+          builder: (_, color, __) => SizedBox(
+            width: 200,
+            height: 44,
+            child: ElevatedButton(
               onPressed: () {
-                if (provider.skillsList.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('At least one skill is required'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  return;
+                if (prov.formKey.currentState!.validate()) {
+                  prov.saveExperienceSection(context);
+                  Future.delayed(const Duration(milliseconds: 200), _nextTab);
                 }
-                provider.saveSkillsSection(context);
               },
-              icon: const Icon(Icons.check, size: 18),
-              label: const Text('Save Skills'),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    provider.getButtonColorForSection('skills')),
-                foregroundColor: WidgetStateProperty.all(Colors.white),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
+              child: const Text('Save & Continue'),
             ),
           ),
-
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-
-
-Widget _buildProfileSummaryTab(ProfileProvider provider) {
-  return SingleChildScrollView(
-    physics: const BouncingScrollPhysics(),
-    child: Column(
-      children: [
-        _buildResponsiveRow([
-         _buildAnimatedField(
-            label: 'Summary',
-            child: TextFormField(
-              initialValue: provider.summary,
-              maxLines: 5,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'A summary is required';
-                }
-                return null;
-              },
-              onChanged: (val) => provider.updateSummary(val),
-              onSaved: (val) => provider.updateSummary(val!.trim()),
-              decoration: InputDecoration(
-                hintText: 'Write a brief summary about yourself (4-5 lines)',
-                hintStyle: GoogleFonts.montserrat(
-                  color: const Color(0xFF5C738A),
-                  fontWeight: FontWeight.w400,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFEBEDF2),
-                contentPadding:
-                const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF006CFF),
-                    width: 2,
-                  ),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.red, width: 2),
-                ),
-              ),
-            ),
-          ),
-        ]),
-        const SizedBox(height: 16),
-
-        _buildResponsiveRow([
-          _buildAnimatedField(
-            label: 'First Name',
-            child: _buildTextField(
-              initialValue: provider.firstName,
-              hint: 'Enter first name',
-              icon: Icons.person_outline,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updateFirstName(val),
-              onSaved: (val) => provider.updateFirstName(val!),
-            ),
-          ),
-          _buildAnimatedField(
-            label: 'Last Name',
-            child: _buildTextField(
-              initialValue: provider.lastName,
-              hint: 'Enter last name',
-              icon: Icons.person_outline,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updateLastName(val),
-              onSaved: (val) => provider.updateLastName(val!),
-            ),
-          ),
-        ]),
-
-
-        const SizedBox(height: 16),
-        _buildResponsiveRow([
-          _buildAnimatedField(
-            label: 'Email',
-            child: _buildTextField(
-              initialValue: provider.email,
-              hint: 'johndoe@email.com',
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                if (!val.contains('@')) return 'Enter valid email';
-                return null;
-              },
-              onChanged: (val) => provider.updateEmail(val),
-              onSaved: (val) => provider.updateEmail(val!),
-            ),
-          ),
-          _buildAnimatedField(
-            label: 'Phone',
-            child: _buildTextField(
-              initialValue: provider.phone,
-              hint: '+1 234 567 890',
-              icon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updatePhone(val),
-              onSaved: (val) => provider.updatePhone(val!),
-            ),
-          ),
-        ]),
-
-
-
-        const SizedBox(height: 16),
-        _buildResponsiveRow([
-          _buildAnimatedField(
-            label: 'Location',
-            child: _buildTextField(
-              initialValue: provider.location,
-              hint: 'City, Country',
-              icon: Icons.location_on_outlined,
-              validator: null,
-              onChanged: (val) => provider.updateLocation(val),
-              onSaved: (val) => provider.updateLocation(val!),
-            ),
-          ),
-          _buildAnimatedField(
-            label: 'LinkedIn Profile',
-            child: _buildTextField(
-              initialValue: provider.linkedIn,
-              hint: 'https://linkedin.com/in/username',
-              icon: Icons.link_outlined,
-              keyboardType: TextInputType.url,
-              validator: null,
-              onChanged: (val) => provider.updateLinkedIn(val),
-              onSaved: (val) => provider.updateLinkedIn(val!),
-            ),
-          ),
-
-        ]),
-
-
-
-
-        const SizedBox(height: 16),
-        Center(child:
-        _buildResponsiveRow([
-
-          _buildAnimatedField(
-            label: 'Current Role',
-            child: _buildTextField(
-              initialValue: provider.current_job,
-              hint: 'iOS Dev,Full Stack Dev....',
-              icon: Icons.web_outlined,
-              keyboardType: TextInputType.url,
-              validator: null,
-              onChanged: (val) => provider.updatecurrent_job(val),
-              onSaved: (val) => provider.updatecurrent_job(val!),
-            ),
-          ),
-        ]),
-            ),
-        const SizedBox(height: 32),
-
-        TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 800),
-          tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.elasticOut,
-          builder: (context, value, _) {
-            final btnColor = provider.getButtonColorForSection('personal');
-            return Transform.scale(
-              scale: value,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Validate before saving
-                      if (provider.formKey.currentState!.validate()) {
-                        provider.formKey.currentState!.save();
-                        provider.savePersonalSection(context);
-                      }
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(btnColor),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: WidgetStateProperty.all(4),
-                      overlayColor: WidgetStateProperty.all(
-                        Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.save_outlined,
-                              color: Colors.white, size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Save & Go To Education Section',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
         ),
-      ],
-    ),
-  );
-}
+      ]),
+    );
+  }
 
-
-  Widget _buildEducationalSummaryTab(ProfileProvider provider,BuildContext context) {
+  Widget _buildTrainingTab(ProfileProvider prov) {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildAnimatedField(
-            label: 'School/University',
-            child: _buildTextField(
-              initialValue: provider.tempSchool,
-              hint: 'Enter institution name',
-              icon: Icons.school_outlined,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildField('Training Course/Program',
+          TextFormField(
+            controller: _courseCtrl,
+            decoration: _fieldDecoration('e.g. Pilot Training, Combat Systems Officer'),
+            validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+            onChanged: (v) {
+              prov.updateTempCertName(v);
+              prov.markCertificationsDirty();
+            },
+          ),
+        ),
+        _buildRowFields([
+          _buildField('Training Base/Institution',
+            TextFormField(
+              controller: _institutionCtrl,
+              decoration: _fieldDecoration('e.g. Sheppard AFB, USAFA'),
+              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+              onChanged: (v) {
+                prov.updateTempCertInstitution(v);
+                prov.markCertificationsDirty();
               },
-              onChanged: (val) => provider.updateTempSchool(val),
-              onSaved: (val) => provider.updateTempSchool(val!),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'Degree',
-                  child: _buildTextField(
-                    initialValue: provider.tempDegree,
-                    hint: 'e.g. Bachelor of Science',
-                    icon: Icons.school_outlined,
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Required';
-                      return null;
-                    },
-                    onChanged: (val) => provider.updateTempDegree(val),
-                    onSaved: (val) => provider.updateTempDegree(val!),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'Field of Study',
-                  child: _buildTextField(
-                    initialValue: provider.tempFieldOfStudy,
-                    hint: 'e.g. Computer Science',
-                    icon: Icons.book_outlined,
-                    validator: null,
-                    onChanged: (val) => provider.updateTempFieldOfStudy(val),
-                    onSaved: (val) => provider.updateTempFieldOfStudy(val!),
-                  ),
-                ),
-              ),
-            ],
+          _buildField('Completion Year',
+            TextFormField(
+              controller: _completionYearCtrl,
+              decoration: _fieldDecoration('YYYY'),
+              onChanged: (v) {
+                prov.updateTempCertYear(v);
+                prov.markCertificationsDirty();
+              },
+            ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'Start Year',
-                  child: _buildTextField(
-                    initialValue: provider.tempEduStart,
-                    hint: 'YYYY',
-                    icon: Icons.calendar_today_outlined,
-                    keyboardType: TextInputType.number,
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Required';
-                      return null;
-                    },
-                    onChanged: (val) => provider.updateTempEduStart(val),
-                    onSaved: (val) => provider.updateTempEduStart(val!),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'End Year',
-                  child: _buildTextField(
-                    initialValue: provider.tempEduEnd,
-                    hint: 'YYYY',
-                    icon: Icons.calendar_today_outlined,
-                    keyboardType: TextInputType.number,
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Required';
-                      return null;
-                    },
-                    onChanged: (val) => provider.updateTempEduEnd(val),
-                    onSaved: (val) => provider.updateTempEduEnd(val!),
-                  ),
-                ),
-              ),
-            ],
+        ]),
+        const SizedBox(height: 20),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => prov.addCertificationEntry(context),
+            icon: const Icon(Icons.add, size: 16),
+            label: Text('Add Training Record', style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: Colors.black87)),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF003366).withOpacity(0.5), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
           ),
-          const SizedBox(height: 16),
-          _buildAnimatedField(
-            label: ' ',
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => provider.addEducationEntry(context),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Education'),
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    addcolor.withOpacity(0.05),
-                  ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  elevation: WidgetStateProperty.all(4),
-                  overlayColor: WidgetStateProperty.all(
-                    Colors.white.withOpacity(0.1),
-                  ),
-                ),
+        ),
+        _buildListItems(prov.certificationsList, 'certifications'),
+        const SizedBox(height: 40),
+        Selector<ProfileProvider, Color>(
+          selector: (_, p) => p.getButtonColorForSection('certifications'),
+          builder: (_, color, __) => SizedBox(
+            width: 200,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () {
+                if (prov.formKey.currentState!.validate()) {
+                  prov.saveCertificationsSection(context);
+                  Future.delayed(const Duration(milliseconds: 200), _nextTab);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
+              child: const Text('Save & Continue'),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
 
-            ),
+  Widget _buildSkillsTab(ProfileProvider prov) {
+    return SingleChildScrollView(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildField('Add Military Specialty/Skill',
+          TextFormField(
+            controller: prov.skillController,
+            decoration: _fieldDecoration('Enter specialty and press Add'),
+            onFieldSubmitted: (_) => prov.addSkillEntry(context),
           ),
-          const SizedBox(height: 24),
-          if (provider.educationList.isEmpty)
-            Center(
-              child: Text(
-                'No education entries yet.',
-                style: GoogleFonts.montserrat(color: Colors.grey.shade600),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: provider.educationList.length,
-              itemBuilder: (context, index) {
-                final edu = provider.educationList[index];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    title: Text(
-                      '${edu['degree']} in ${edu['fieldOfStudy']}',
-                      style:
-                      GoogleFonts.montserrat(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      '${edu['school']} (${edu['eduStart']} – ${edu['eduEnd']})',
-                      style: GoogleFonts.montserrat(fontSize: 12),
-                    ),
-                  ),
-                );
+        ),
+        const SizedBox(height: 20),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => prov.addSkillEntry(context),
+            icon: const Icon(Icons.add, size: 16),
+            label: Text('Add Specialty', style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: Colors.black87)),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF003366).withOpacity(0.5), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+          ),
+        ),
+        const SizedBox(height: 24),
+        if (prov.skillsList.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: prov.skillsList.map((skill) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.grey.shade300)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(skill, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500)),
+                const SizedBox(width: 8),
+                GestureDetector(onTap: () { prov.skillsList.remove(skill); prov.notifyListeners(); }, child: Icon(Icons.close, size: 14, color: Colors.grey.shade600)),
+              ]),
+            )).toList(),
+          ),
+        const SizedBox(height: 40),
+        Selector<ProfileProvider, Color>(
+          selector: (_, p) => p.getButtonColorForSection('skills'),
+          builder: (_, color, __) => SizedBox(
+            width: 200,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () {
+                if (prov.formKey.currentState!.validate()) {
+                  prov.saveSkillsSection(context);
+                }
               },
-            ),
-          const SizedBox(height: 24),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () => provider.saveEducationSection(context),
-              icon: const Icon(Icons.save, size: 18,color: Colors.white,),
-              label: const Text('Save & Go To Experience Section',style: TextStyle(color:Colors.white),),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    provider.getButtonColorForSection('education')),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
+              child: const Text('Save Specialties'),
             ),
           ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildDocsTab() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Upload Military Documents', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade900)),
+      const SizedBox(height: 8),
+      Text('Upload relevant military documents such as service records, commendations, or certifications.', style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade600)),
+      const SizedBox(height: 32),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(48),
+        decoration: BoxDecoration(border: Border.all(color: const Color(0xFF003366)), borderRadius: BorderRadius.circular(8)),
+        child: Column(children: [
+          const Icon(Icons.upload_file, size: 48, color: Color(0xFF003366)),
           const SizedBox(height: 16),
+          Text('Drag and drop files here, or click to browse', style: GoogleFonts.inter(fontSize: 16, color: Colors.grey.shade700)),
+          const SizedBox(height: 8),
+          Text('Supported formats: PDF, DOC, DOCX, JPG, PNG', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade500)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003366), elevation: 0, side: const BorderSide(color: Color(0xFF003366)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+            child: Text('Choose Files', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+          ),
+        ]),
+      ),
+    ]);
+  }
+
+  Widget _buildField(String label, Widget child) {
+    return Padding(padding: const EdgeInsets.only(bottom: 24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade900)),
+      const SizedBox(height: 8),
+      child,
+    ]));
+  }
+
+  Widget _buildRowFields(List<Widget> children) {
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: children.map((child) => Expanded(child: Padding(padding: EdgeInsets.only(right: children.indexOf(child) == children.length - 1 ? 0 : 16), child: child))).toList());
+  }
+
+  InputDecoration _fieldDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF003366), width: 2)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.red, width: 2)),
+    );
+  }
+
+  Widget _buildListItems(List<Map<String, dynamic>> items, String section) {
+    if (items.isEmpty) return const SizedBox(height: 16);
+    return Column(children: [
+      const SizedBox(height: 16),
+      ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: items.length,
+        itemBuilder: (context, index) => _buildDetailedCard(items[index], section, index),
+      ),
+    ]);
+  }
+
+  Widget _buildDetailedCard(Map<String, dynamic> item, String section, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.blue.shade100, width: 1)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showDetailModal(item, section),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _buildCardHeader(item, section, index),
+              const SizedBox(height: 12),
+              _buildCardContent(item, section),
+              const SizedBox(height: 8),
+              _buildCardFooter(item, section),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardHeader(Map<String, dynamic> item, String section, int index) {
+    return Row(children: [
+      Container(padding: const EdgeInsets.all(8), color: Colors.white, child: Icon(_getSectionIcon(section), color: const Color(0xFF003366), size: 18)),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(_getCardTitle(item, section), style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey.shade800), maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(_getCardSubtitle(item, section), style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF003366), fontWeight: FontWeight.w500)),
+      ])),
+      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF003366), borderRadius: BorderRadius.circular(12)), child: Row(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.verified, color: Colors.white, size: 14),
+        const SizedBox(width: 4),
+        Text('#${(index + 1).toString().padLeft(2, '0')}', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white)),
+      ])),
+    ]);
+  }
+
+  Widget _buildCardContent(Map<String, dynamic> item, String section) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+      child: Column(children: _getDetailRows(item, section)),
+    );
+  }
+
+  List<Widget> _getDetailRows(Map<String, dynamic> item, String section) {
+    switch (section) {
+      case 'education':
+        return [
+          _buildDetailRow(Icons.school, 'Unit/Squadron', item['school'] ?? 'N/A'),
+          _buildDetailRow(Icons.work, 'Position', item['degree'] ?? 'N/A'),
+          _buildDetailRow(Icons.code, 'AFSC', item['fieldOfStudy'] ?? 'N/A'),
+          _buildDetailRow(Icons.calendar_month, 'Duration', '${item['eduStart'] ?? 'N/A'} - ${item['eduEnd'] ?? 'N/A'}'),
+        ];
+      case 'experience':
+        return [
+          _buildDetailRow(Icons.flight, 'Aircraft', item['company'] ?? 'N/A'),
+          _buildDetailRow(Icons.access_time, 'Flight Hours', '${item['role'] ?? 'N/A'} hrs'),
+          _buildDetailRow(Icons.flight_takeoff, 'Total Flights', item['expStart'] ?? 'N/A'),
+          _buildDetailRow(Icons.assignment, 'Mission Type', item['expEnd'] ?? 'N/A'),
+          if ((item['expDescription'] ?? '').toString().isNotEmpty)
+            _buildDetailRow(Icons.description, 'Details', item['expDescription'], isMultiline: true),
+        ];
+      case 'certifications':
+        return [
+          _buildDetailRow(Icons.school, 'Course', item['certName'] ?? 'N/A'),
+          _buildDetailRow(Icons.location_city, 'Institution', item['certInstitution'] ?? 'N/A'),
+          _buildDetailRow(Icons.calendar_today, 'Year', item['certYear'] ?? 'N/A'),
+        ];
+      default:
+        return [_buildDetailRow(Icons.info, 'Info', item.toString())];
+    }
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, dynamic value, {bool isMultiline = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: Colors.blue.shade400),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 80,
+            child: Text(label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.grey.shade600)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(value.toString(), style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade800), maxLines: isMultiline ? 3 : 1, overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildProfessionalExperienceTab(ProfileProvider provider,BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildAnimatedField(
-            label: 'Company',
-            child: _buildTextField(
-              initialValue: provider.tempCompany,
-              hint: 'Enter company name',
-              icon: Icons.business_outlined,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updateTempCompany(val),
-              onSaved: (val) => provider.updateTempCompany(val!),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildAnimatedField(
-            label: 'Role/Position',
-            child: _buildTextField(
-              initialValue: provider.tempRole,
-              hint: 'e.g. Software Engineer',
-              icon: Icons.work_outline,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updateTempRole(val),
-              onSaved: (val) => provider.updateTempRole(val!),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'Start Date',
-                  child: _buildTextField(
-                    initialValue: provider.tempExpStart,
-                    hint: 'MM/YYYY',
-                    icon: Icons.calendar_today_outlined,
-                    keyboardType: TextInputType.datetime,
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Required';
-                      return null;
-                    },
-                    onChanged: (val) => provider.updateTempExpStart(val),
-                    onSaved: (val) => provider.updateTempExpStart(val!),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'End Date',
-                  child: _buildTextField(
-                    initialValue: provider.tempExpEnd,
-                    hint: 'MM/YYYY or Present',
-                    icon: Icons.calendar_today_outlined,
-                    validator: null,
-                    onChanged: (val) => provider.updateTempExpEnd(val),
-                    onSaved: (val) => provider.updateTempExpEnd(val!),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildAnimatedField(
-            label: 'Description',
-            child: _buildMulti_Line_TextArea(
-              initialValue: provider.tempExpDescription,
-              hint: 'Describe your role and responsibilities',
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updateTempExpDescription(val),
-              onSaved: (val) => provider.updateTempExpDescription(val!),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: () => provider.addExperienceEntry(context),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Experience'),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  addcolor.withOpacity(0.05),
-                ),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          if (provider.experienceList.isEmpty)
-            Center(
-              child: Text(
-                'No experience entries yet.',
-                style: GoogleFonts.montserrat(color: Colors.grey.shade600),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: provider.experienceList.length,
-              itemBuilder: (context, index) {
-                final exp = provider.experienceList[index];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    title: Text(
-                      '${exp['role']} at ${exp['company']}',
-                      style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '(${exp['expStart']} – ${exp['expEnd']})',
-                          style: GoogleFonts.montserrat(fontSize: 12),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          exp['expDescription'] ?? '',
-                          style: GoogleFonts.montserrat(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          const SizedBox(height: 24),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () => provider.saveExperienceSection(context),
-              icon: const Icon(Icons.save, size: 18,color: Colors.white,),
-              label: const Text('Save & Go To Certification Section',style: TextStyle(color:Colors.white),),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                    provider.getButtonColorForSection('experience')),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
+  Widget _buildCardFooter(Map<String, dynamic> item, String section) {
+    return Row(children: [
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        decoration: BoxDecoration(color: const Color(0xFF003366), borderRadius: BorderRadius.circular(8)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.visibility, size: 12, color: Colors.white),
+          const SizedBox(width: 4),
+          Text('View Details', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
+        ]),
       ),
-    );
+    ]);
   }
 
-  Widget _buildCertificationsTab(ProfileProvider provider,BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildAnimatedField(
-            label: 'Certification Name',
-            child: _buildTextField(
-              initialValue: provider.tempCertName,
-              hint: 'Enter certification title',
-              icon: Icons.verified_outlined,
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'Required';
-                return null;
-              },
-              onChanged: (val) => provider.updateTempCertName(val),
-              onSaved: (val) => provider.updateTempCertName(val!),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'Issuing Institution',
-                  child: _buildTextField(
-                    initialValue: provider.tempCertInstitution,
-                    hint: 'Enter institution name',
-                    icon: Icons.business_outlined,
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Required';
-                      return null;
-                    },
-                    onChanged: (val) => provider.updateTempCertInstitution(val),
-                    onSaved: (val) => provider.updateTempCertInstitution(val!),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildAnimatedField(
-                  label: 'Year Obtained',
-                  child: _buildTextField(
-                    initialValue: provider.tempCertYear,
-                    hint: 'YYYY',
-                    icon: Icons.calendar_today_outlined,
-                    keyboardType: TextInputType.number,
-                    validator: null,
-                    onChanged: (val) => provider.updateTempCertYear(val),
-                    onSaved: (val) => provider.updateTempCertYear(val!),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: () => provider.addCertificationEntry(context),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Certification'),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  addcolor.withOpacity(0.05),
-                ),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
+  IconData _getSectionIcon(String section) {
+    switch (section) {
+      case 'education':
+        return Icons.military_tech;
+      case 'experience':
+        return Icons.flight;
+      case 'certifications':
+        return Icons.school;
+      default:
+        return Icons.info;
+    }
+  }
 
-          ),
-          const SizedBox(height: 24),
-          if (provider.certificationsList.isEmpty)
-            Center(
-              child: Text(
-                'No certifications yet.',
-                style: GoogleFonts.montserrat(color: Colors.grey.shade600),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: provider.certificationsList.length,
-              itemBuilder: (context, index) {
-                final cert = provider.certificationsList[index];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    title: Text(
-                      cert['certName'] ?? '',
-                      style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      '${cert['certInstitution']} (${cert['certYear']})',
-                      style: GoogleFonts.montserrat(fontSize: 12),
-                    ),
-                  ),
-                );
-              },
-            ),
-          const SizedBox(height: 24),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () => provider.saveCertificationsSection(context),
-              icon: const Icon(Icons.save, size: 18,color: Colors.white,),
-              label: const Text('Save & Go To Attachments',style: TextStyle(color:Colors.white),),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-    provider.getButtonColorForSection('certifications')),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                ),
-                elevation: WidgetStateProperty.all(4),
-                overlayColor: WidgetStateProperty.all(
-                  Colors.white.withOpacity(0.1),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+  String _getCardTitle(Map<String, dynamic> item, String section) {
+    switch (section) {
+      case 'education':
+        return item['school']?.toString() ?? 'Military Unit';
+      case 'experience':
+        return item['company']?.toString() ?? 'Aircraft Type';
+      case 'certifications':
+        return item['certName']?.toString() ?? 'Training Course';
+      default:
+        return 'Record';
+    }
+  }
+
+  String _getCardSubtitle(Map<String, dynamic> item, String section) {
+    switch (section) {
+      case 'education':
+        return item['degree']?.toString() ?? 'Position';
+      case 'experience':
+        return '${item['role']?.toString() ?? '0'} Flight Hours';
+      case 'certifications':
+        return item['certInstitution']?.toString() ?? 'Institution';
+      default:
+        return 'Details';
+    }
+  }
+
+  void _showDetailModal(Map<String, dynamic> item, String section) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(children: [
+          Icon(_getSectionIcon(section), color: Colors.blue.shade600),
+          const SizedBox(width: 8),
+          Text('Record Details', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        ]),
+        content: SingleChildScrollView(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: _getDetailRows(item, section)),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Close', style: GoogleFonts.poppins(color: Colors.blue.shade600))),
         ],
       ),
     );

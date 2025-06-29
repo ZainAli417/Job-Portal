@@ -1,7 +1,6 @@
 // ProfileSidebar.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Screens/Job_Seeker/Profile_Provider.dart';
 import 'CV_Generator.dart';
@@ -9,7 +8,7 @@ import 'CV_Generator.dart';
 class ProfileSidebar extends StatelessWidget {
   final ProfileProvider provider;
 
-  const ProfileSidebar({Key? key, required this.provider}) : super(key: key);
+  const ProfileSidebar({super.key, required this.provider});
 
   @override
   Widget build(BuildContext context) {

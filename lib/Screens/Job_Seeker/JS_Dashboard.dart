@@ -1,11 +1,11 @@
-// dashboard.dart - Enhanced Version
+// JS_Dashboard.dart - Enhanced Version
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../Constant/Job_Carousel.dart';
 import '../../Top_Side_Nav.dart';
-import 'Dashboard_Provider.dart';
+import 'job_seeker_provider.dart';
+import 'Job_seeker_Available_jobs.dart';
 
 /// Enhanced JobSeekerDashboard with modern UI/UX and optimized performance
 class JobSeekerDashboard extends StatefulWidget {
@@ -84,16 +84,13 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => JobProvider(),
-      child: MainLayout(
-        activeIndex: 0,
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: _buildDashboardContent(context),
-          ),
+    return MainLayout(
+      activeIndex: 0,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: _buildDashboardContent(context),
         ),
       ),
     );
@@ -115,7 +112,66 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
                 children: [
                   const _EnhancedProfileCard(),
                   const SizedBox(height: 32),
-                  const JobCarousel(),
+                  SizedBox(
+                    height: 600, // Set a fixed height or calculate based on screen
+                    child: Consumer<job_seeker_provider>(
+                      builder: (context, provider, _) {
+                        return StreamBuilder<List<Map<String, dynamic>>>(
+                          stream: provider.publicJobsStream(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text(
+                                  'Error loading jobs: ${snapshot.error}',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: Colors.red.shade700,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final jobs = snapshot.data ?? [];
+
+                            if (jobs.isEmpty) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.work_outline_rounded,
+                                        size: 80, color: Colors.grey.shade400),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No jobs available right now.\nPlease check back later.',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            return RepaintBoundary(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
+                                child: LiveJobsForSeeker(jobs: jobs),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -197,7 +253,7 @@ class _EnhancedProfileCardState extends State<_EnhancedProfileCard>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome Back, Zain! 👋',
+          'Welcome Back, Zain!',
           style: GoogleFonts.inter(
             fontSize: 28,
             fontWeight: FontWeight.w700,
@@ -259,6 +315,9 @@ class _EnhancedProfileCardState extends State<_EnhancedProfileCard>
     );
   }
 }
+
+
+
 
 class _EnhancedStatCard extends StatefulWidget {
   final IconData icon;
@@ -354,7 +413,6 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
                   ),
                 ],
               ),
-
             ),
           );
         },
@@ -416,11 +474,6 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
 
 
 
-
-
-
-
-/// Enhanced AI Assistant with modern chat interface
 class _EnhancedAIAssistant extends StatefulWidget {
   final TextEditingController messageController;
   final FocusNode messageFocusNode;
@@ -581,7 +634,6 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
               ],
       ),
       child: TextField(
-
         controller: widget.messageController,
         focusNode: widget.messageFocusNode,
         style: GoogleFonts.inter(

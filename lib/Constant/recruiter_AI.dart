@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 // CONSTANT COLORS
 // --------------------------------------------------
 class AppColors {
-  static const Color primary = Color(0xFF006CFF);
+  static const Color primary = Color(0xFF003366);
   static const Color white = Colors.white;
   static const Color offWhite = Color(0xFFFAFAFA);
   static const Color paleWhite = Color(0xFFF5F5F5);

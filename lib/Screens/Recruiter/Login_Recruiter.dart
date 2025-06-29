@@ -5,10 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../main.dart';
 import '../../Constant/Header_Nav.dart';
-import '../Job_Seeker/Signup_Provider.dart';
-import '../Job_Seeker/login_provider.dart';
 import 'login_provider_Recruiter.dart';
 
 class Recruiter_LoginScreen extends StatefulWidget {

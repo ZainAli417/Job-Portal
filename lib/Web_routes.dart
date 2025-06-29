@@ -9,12 +9,12 @@ import 'Constant/Forget Password.dart';
 import 'Screens/Job_Seeker/JS_Profile.dart';
 import 'Screens/Job_Seeker/Login.dart';
 import 'Screens/Job_Seeker/Sign Up.dart';
-import 'Screens/Job_Seeker/dashboard.dart';
+import 'Screens/Job_Seeker/JS_Dashboard.dart';
 import 'Screens/Recruiter/Login_Recruiter.dart';
 import 'Screens/Recruiter/Sign Up_Recruiter.dart';
 import 'Constant/Splash.dart';
-import 'Screens/Recruiter/job_posting.dart';
-import 'Screens/Recruiter/recuriter_dashbaord_view_class.dart';
+import 'Screens/Recruiter/Post_A_Job_Dashboard.dart';
+import 'Screens/Recruiter/Recruiter_dashboard.dart';
 
 class AuthNotifier extends ChangeNotifier {
   late final StreamSubscription<User?> _authSubscription;

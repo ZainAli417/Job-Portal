@@ -1,12 +1,11 @@
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'job_posting_provider.dart';
+import 'Recruiter_provider.dart';
 
 class PostJobDialog extends StatefulWidget {
-  const PostJobDialog({Key? key}) : super(key: key);
+  const PostJobDialog({super.key});
 
   @override
   _PostJobDialogState createState() => _PostJobDialogState();
@@ -14,28 +13,50 @@ class PostJobDialog extends StatefulWidget {
 
 class _PostJobDialogState extends State<PostJobDialog> {
   final _formKey = GlobalKey<FormState>();
-  static const Color primary = Color(0xFF006CFF);
+  static const Color primary = Color(0xFF003366); // Air Force Blue
+  static const Color secondary = Color(0xFF87CEEB); // Sky Blue
   static const Color white = Color(0xFFFAFAFA);
   static const Color paleWhite = Color(0xFFF5F5F5);
   static Color primaryLight = primary.withOpacity(0.2);
   static Color primaryDark = primary.withOpacity(0.8);
 
   final List<String> skillOptions = [
-    'Flutter','Dart','React','JavaScript','Python','Java',
-    'Node.js','MongoDB','Firebase','AWS','Docker','Git',
-    'UI/UX Design','Project Management','Agile','Scrum'
+    'Aircraft Maintenance','Avionics Systems','Flight Operations','Radar Systems',
+    'Navigation Systems','Aircraft Engines','Hydraulic Systems','Electrical Systems',
+    'Flight Planning','Air Traffic Control','Weather Analysis','Mission Planning',
+    'Safety Protocols','Emergency Procedures','Quality Assurance','Technical Documentation',
+    'Pilot Training','Crew Resource Management','Aircraft Inspection','Ground Support Equipment'
   ];
 
   final List<String> benefitOptions = [
-    'Health Insurance','Dental Insurance','Vision Insurance',
-    'Retirement Plan','Flexible Hours','Work from Home',
-    'Paid Time Off','Professional Development','Gym Membership',
-    'Free Meals','Stock Options','Bonus Eligibility',
-    'Transportation Allowance','Childcare Support'
+    'Military Health Insurance','Dental Coverage','Vision Coverage',
+    'Military Retirement Plan','Base Housing','Family Support Services',
+    'Educational Benefits','Professional Training','Commissary Privileges',
+    'Base Recreational Facilities','Travel Allowances','Hazard Pay',
+    'Flight Pay','Technical Certification Support','Career Development Programs'
   ];
 
   final List<String> workModeOptions = [
-    'Remote','Hybrid','On-site','Flexible'
+    'On-Base','Field Operations','Deployed Missions','Training Facilities'
+  ];
+
+  final List<String> rankRequirements = [
+    'Enlisted Personnel','Non-Commissioned Officer (NCO)','Senior NCO',
+    'Warrant Officer','Commissioned Officer','Senior Officer','Any Rank'
+  ];
+
+  final List<String> securityClearanceOptions = [
+    'None Required','Confidential','Secret','Top Secret','Top Secret/SCI'
+  ];
+
+  final List<String> departmentOptions = [
+    'Flight Operations','Aircraft Maintenance','Avionics','Ground Support',
+    'Air Traffic Control','Weather Squadron','Security Forces','Logistics',
+    'Intelligence','Communications','Medical','Administration','Training Command'
+  ];
+
+  final List<String> salaryTypeOptions = [
+    'Base Pay + Allowances','Hourly Rate','Annual Salary','Per Diem','Contract Rate'
   ];
 
   @override
@@ -73,7 +94,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
                       color: primaryLight,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.work_rounded, color: primary, size: 24),
+                    child: Icon(Icons.flight_rounded, color: primary, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -81,16 +102,16 @@ class _PostJobDialogState extends State<PostJobDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Create Job Posting',
-                          style: GoogleFonts.montserrat(
+                          'Create Air Force Job Posting',
+                          style: GoogleFonts.inter(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87,
                           ),
                         ),
                         Text(
-                          'Fill in the details to post your job opening',
-                          style: GoogleFonts.montserrat(
+                          'Post aviation and support positions for Air Force personnel',
+                          style: GoogleFonts.inter(
                             fontSize: 13,
                             color: Colors.grey.shade600,
                           ),
@@ -118,8 +139,8 @@ class _PostJobDialogState extends State<PostJobDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSectionCard(
-                        title: 'Company & Basic Information',
-                        icon: Icons.business_rounded,
+                        title: 'Unit & Position Information',
+                        icon: Icons.military_tech_rounded,
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,34 +151,35 @@ class _PostJobDialogState extends State<PostJobDialog> {
                                 child: Column(
                                   children: [
                                     _buildTextField(
-                                      label: 'Job Title',
+                                      label: 'Position Title',
                                       initialValue: provider.tempTitle,
                                       onChanged: provider.updateTempTitle,
                                       validator: (v) =>
                                       v!.trim().isEmpty ? 'Required' : null,
                                       icon: Icons.work_outline,
+                                      hintText: 'e.g., Aircraft Maintenance Technician, Pilot, Air Traffic Controller',
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
                                         Expanded(
                                           child: _buildTextField(
-                                            label: 'Company Name',
+                                            label: 'Air Force Unit/Base',
                                             initialValue: provider.tempCompany ?? '',
                                             onChanged: provider.updateTempCompany,
                                             validator: (v) =>
                                             v!.trim().isEmpty ? 'Required' : null,
-                                            icon: Icons.apartment_rounded,
+                                            icon: Icons.location_city_rounded,
+                                            hintText: 'e.g., 15th Wing, Edwards AFB',
                                           ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
-                                          child: _buildTextField(
-                                            label: 'Department',
-                                            initialValue: provider.tempDepartment,
-                                            onChanged: provider.updateTempDepartment,
-                                            validator: (v) =>
-                                            v!.trim().isEmpty ? 'Required' : null,
+                                          child: _buildDropdownField(
+                                            label: 'Department/Squadron',
+                                            value: provider.tempDepartment ?? departmentOptions.first,
+                                            items: departmentOptions,
+                                            onChanged: (val) => provider.updateTempDepartment(val!),
                                             icon: Icons.group_work_outlined,
                                           ),
                                         ),
@@ -172,71 +194,108 @@ class _PostJobDialogState extends State<PostJobDialog> {
                       ),
                       const SizedBox(height: 16),
                       _buildSectionCard(
-                        title: 'Job Description & Requirements',
+                        title: 'Position Description & Requirements',
                         icon: Icons.description_outlined,
                         children: [
                           _buildTextField(
-                            label: 'Job Description',
+                            label: 'Position Description',
                             initialValue: provider.tempDescription,
                             onChanged: provider.updateTempDescription,
                             validator: (v) =>
                             v!.trim().isEmpty ? 'Required' : null,
                             maxLines: 4,
                             icon: Icons.edit_note_rounded,
+                            hintText: 'Describe the role, mission support requirements, and operational responsibilities',
                           ),
                           const SizedBox(height: 12),
                           _buildTextField(
-                            label: 'Key Responsibilities',
+                            label: 'Primary Duties & Responsibilities',
                             initialValue: provider.tempResponsibilities ?? '',
                             onChanged: provider.updateTempResponsibilities,
                             validator: (v) =>
                             v!.trim().isEmpty ? 'Required' : null,
                             maxLines: 3,
                             icon: Icons.checklist_rounded,
+                            hintText: 'List key operational duties, maintenance tasks, or administrative responsibilities',
                           ),
                           const SizedBox(height: 12),
                           _buildTextField(
-                            label: 'Minimum Qualifications',
+                            label: 'Required Qualifications & Training',
                             initialValue: provider.tempQualifications ?? '',
                             onChanged: provider.updateTempQualifications,
                             validator: (v) =>
                             v!.trim().isEmpty ? 'Required' : null,
                             maxLines: 3,
                             icon: Icons.school_outlined,
+                            hintText: 'Military training, certifications, technical schools, or civilian education required',
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       _buildSectionCard(
-                        title: 'Compensation & Work Details',
-                        icon: Icons.payments_outlined,
+                        title: 'Compensation & Pay Information',
+                        icon: Icons.attach_money_rounded,
                         children: [
                           Row(
                             children: [
                               Expanded(
+                                child: _buildDropdownField(
+                                  label: 'Compensation Type',
+                                  value: provider.tempSalaryType ?? salaryTypeOptions.first,
+                                  items: salaryTypeOptions,
+                                  onChanged: (val) => provider.updateTempSalaryType(val!),
+                                  icon: Icons.payments_outlined,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
                                 child: _buildTextField(
                                   label: 'Salary Range',
-                                  initialValue: provider.tempPay,
-                                  onChanged: provider.updateTempPay,
+                                  initialValue: provider.tempSalary ?? '',
+                                  onChanged: provider.updateTempSalary,
                                   validator: (v) =>
                                   v!.trim().isEmpty ? 'Required' : null,
-                                  icon: Icons.attach_money_rounded,
+                                  icon: Icons.monetization_on_outlined,
+                                  hintText: 'e.g., \$45,000 - \$65,000 or E-5 Base Pay + BAH',
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          _buildTextField(
+                            label: 'Additional Pay Details',
+                            initialValue: provider.tempPayDetails ?? '',
+                            onChanged: provider.updateTempPayDetails,
+                            maxLines: 2,
+                            icon: Icons.info_outline_rounded,
+                            hintText: 'Special pay, hazard pay, flight pay, bonuses, or allowances included',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildSectionCard(
+                        title: 'Rank & Security Requirements',
+                        icon: Icons.security_rounded,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildDropdownField(
+                                  label: 'Minimum Rank Required',
+                                  value: provider.tempNature ?? rankRequirements.first,
+                                  items: rankRequirements,
+                                  onChanged: (val) => provider.updateTempNature(val!),
+                                  icon: Icons.stars_rounded,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _buildDropdownField(
-                                  label: 'Job Type',
-                                  value: provider.tempNature,
-                                  items: const [
-                                    'Full Time',
-                                    'Part Time',
-                                    'Contract',
-                                    'montserratnship'
-                                  ],
-                                  onChanged: (val) =>
-                                      provider.updateTempNature(val!),
-                                  icon: Icons.schedule_rounded,
+                                  label: 'Security Clearance',
+                                  value: provider.tempExperience ?? securityClearanceOptions.first,
+                                  items: securityClearanceOptions,
+                                  onChanged: (val) => provider.updateTempExperience(val!),
+                                  icon: Icons.verified_user_rounded,
                                 ),
                               ),
                             ],
@@ -246,23 +305,25 @@ class _PostJobDialogState extends State<PostJobDialog> {
                             children: [
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Experience Required',
-                                  initialValue: provider.tempExperience,
-                                  onChanged: provider.updateTempExperience,
+                                  label: 'Years of Service Required',
+                                  initialValue: provider.tempPay ?? '',
+                                  onChanged: provider.updateTempPay,
                                   validator: (v) =>
                                   v!.trim().isEmpty ? 'Required' : null,
-                                  icon: Icons.trending_up_rounded,
+                                  icon: Icons.timeline_rounded,
+                                  hintText: 'e.g., 2-5 years, Entry Level, 10+ years',
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Location',
+                                  label: 'Duty Location',
                                   initialValue: provider.tempLocation ?? '',
                                   onChanged: provider.updateTempLocation,
                                   validator: (v) =>
                                   v!.trim().isEmpty ? 'Required' : null,
                                   icon: Icons.location_on_outlined,
+                                  hintText: 'e.g., Edwards AFB, CA or Worldwide Assignment',
                                 ),
                               ),
                             ],
@@ -271,11 +332,11 @@ class _PostJobDialogState extends State<PostJobDialog> {
                       ),
                       const SizedBox(height: 16),
                       _buildSectionCard(
-                        title: 'Work Mode & Required Skills',
-                        icon: Icons.computer_rounded,
+                        title: 'Duty Type & Required Skills',
+                        icon: Icons.precision_manufacturing_rounded,
                         children: [
                           _buildPillSelector(
-                            title: 'Work Mode',
+                            title: 'Duty Assignment Type',
                             selectedItems: provider.tempWorkModes,
                             availableItems: workModeOptions,
                             color: primary,
@@ -283,32 +344,32 @@ class _PostJobDialogState extends State<PostJobDialog> {
                           ),
                           const SizedBox(height: 16),
                           _buildPillSelector(
-                            title: 'Required Skills',
+                            title: 'Required Technical Skills',
                             selectedItems: provider.tempSkills,
                             availableItems: skillOptions,
-                            color: const Color(0xFF00C851),
+                            color: const Color(0xFF228B22),
                             onToggle: provider.toggleSkill,
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       _buildSectionCard(
-                        title: 'Benefits & Perks',
+                        title: 'Military Benefits & Incentives',
                         icon: Icons.card_giftcard_rounded,
                         children: [
                           _buildPillSelector(
-                            title: 'Employee Benefits',
+                            title: 'Available Benefits & Allowances',
                             selectedItems: provider.tempBenefits,
                             availableItems: benefitOptions,
-                            color: const Color(0xFFFF6B35),
+                            color: const Color(0xFFB8860B),
                             onToggle: provider.toggleBenefit,
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       _buildSectionCard(
-                        title: 'Application Details',
-                        icon: Icons.send_rounded,
+                        title: 'Application & Contact Information',
+                        icon: Icons.contact_mail_rounded,
                         children: [
                           Row(
                             children: [
@@ -320,12 +381,13 @@ class _PostJobDialogState extends State<PostJobDialog> {
                                   validator: (v) =>
                                   v!.trim().isEmpty ? 'Required' : null,
                                   icon: Icons.calendar_today_rounded,
+                                  hintText: 'MM/DD/YYYY or "Until Filled"',
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Contact Email',
+                                  label: 'Contact Email (.mil preferred)',
                                   initialValue: provider.tempContactEmail ?? '',
                                   onChanged: provider.updateTempContactEmail,
                                   validator: (v) {
@@ -338,17 +400,19 @@ class _PostJobDialogState extends State<PostJobDialog> {
                                     return null;
                                   },
                                   icon: Icons.email_outlined,
+                                  hintText: 'johndoe@mail.com',
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
                           _buildTextField(
-                            label: 'Additional Instructions for Applicants',
+                            label: 'Special Instructions for Applicants',
                             initialValue: provider.tempInstructions ?? '',
                             onChanged: provider.updateTempInstructions,
                             maxLines: 2,
                             icon: Icons.info_outline_rounded,
+                            hintText: 'PCS requirements, deployment readiness, physical fitness standards, etc.',
                           ),
                         ],
                       ),
@@ -391,7 +455,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Job posted successfully! 🎉'),
+                                    content: const Text('Position posted successfully! 🚀'),
                                     backgroundColor: Colors.green,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
@@ -419,11 +483,11 @@ class _PostJobDialogState extends State<PostJobDialog> {
                               : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.rocket_launch_rounded, size: 20),
+                              const Icon(Icons.flight_takeoff_rounded, size: 20),
                               const SizedBox(width: 8),
                               Text(
-                                'Post Job Now',
-                                style: GoogleFonts.montserrat(
+                                'Post Position Now',
+                                style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -467,7 +531,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -486,8 +550,8 @@ class _PostJobDialogState extends State<PostJobDialog> {
     return Column(
       children: [
         Text(
-          'Company Logo',
-          style: GoogleFonts.montserrat(
+          'Unit Emblem',
+          style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: Colors.grey.shade600,
@@ -539,7 +603,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
                 const SizedBox(height: 4),
                 Text(
                   'Upload',
-                  style: GoogleFonts.montserrat(
+                  style: GoogleFonts.inter(
                     fontSize: 11,
                     color: primary,
                     fontWeight: FontWeight.w500,
@@ -560,20 +624,22 @@ class _PostJobDialogState extends State<PostJobDialog> {
     String? Function(String?)? validator,
     int maxLines = 1,
     IconData? icon,
+    String? hintText,
   }) {
     return TextFormField(
       initialValue: initialValue,
       maxLines: maxLines,
       onChanged: onChanged,
       validator: validator,
-      style: GoogleFonts.montserrat(
+      style: GoogleFonts.inter(
         fontSize: 15,
         color: Colors.black87,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: icon != null ? Icon(icon, color: primary, size: 30) : null,
+        hintText: hintText,
+        prefixIcon: icon != null ? Icon(icon, color: primary, size: 20) : null,
         filled: true,
         fillColor: paleWhite,
         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -583,7 +649,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primary.withOpacity(0.5)),
+          borderSide: BorderSide(color: primary.withOpacity(0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -593,10 +659,15 @@ class _PostJobDialogState extends State<PostJobDialog> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.red),
         ),
-        labelStyle: GoogleFonts.montserrat(
+        labelStyle: GoogleFonts.inter(
           color: Colors.grey.shade500,
           fontSize: 13,
           fontWeight: FontWeight.w500,
+        ),
+        hintStyle: GoogleFonts.inter(
+          color: Colors.grey.shade600,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
         ),
       ),
     );
@@ -604,18 +675,20 @@ class _PostJobDialogState extends State<PostJobDialog> {
 
   Widget _buildDropdownField({
     required String label,
-    required String value,
+    required String? value, // make nullable for safety
     required List<String> items,
     required Function(String?) onChanged,
     IconData? icon,
   }) {
+    final validValue = items.contains(value) ? value : null;
+
     return DropdownButtonFormField<String>(
-      value: value,
+      value: validValue,
       items: items
           .map((item) => DropdownMenuItem(value: item, child: Text(item)))
           .toList(),
       onChanged: onChanged,
-      style: GoogleFonts.montserrat(fontSize: 14, color: Colors.black87),
+      style: GoogleFonts.inter(fontSize: 14, color: Colors.black87),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: icon != null ? Icon(icon, color: primary, size: 20) : null,
@@ -628,16 +701,17 @@ class _PostJobDialogState extends State<PostJobDialog> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
+          borderSide: BorderSide(color: primary.withOpacity(0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primary, width: 2),
         ),
-        labelStyle: GoogleFonts.montserrat(color: Colors.grey.shade600, fontSize: 13),
+        labelStyle: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 13),
       ),
     );
   }
+
 
   Widget _buildPillSelector({
     required String title,
@@ -651,7 +725,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
       children: [
         Text(
           title,
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
@@ -682,7 +756,7 @@ class _PostJobDialogState extends State<PostJobDialog> {
                     if (isSelected) const SizedBox(width: 4),
                     Text(
                       item,
-                      style: GoogleFonts.montserrat(
+                      style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         color: isSelected ? color : Colors.grey.shade700,

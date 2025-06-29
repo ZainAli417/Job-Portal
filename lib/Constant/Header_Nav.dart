@@ -82,7 +82,6 @@ context.go('/register');                },
               OutlinedButton(
                 onPressed: () {
                   GoRouter.of(context).replace('/login');
-                  ;
                   },
                 style: OutlinedButton.styleFrom(
                   backgroundColor: primaryColor,

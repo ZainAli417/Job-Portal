@@ -1,245 +1,73 @@
 // top_nav.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:job_portal/Screens/Recruiter/sidebar_provider.dart';
 import 'package:provider/provider.dart';
-import 'Screens/Job_Seeker/Login.dart';
-import 'Top_Nav_Provider.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
-  final int activeIndex; // 0 = Dashboard, 1 = Profile, etc.
+  final int activeIndex;
+  @override
   final Key? key;
 
-     MainLayout({
+  const MainLayout({
     this.key,
     required this.child,
     required this.activeIndex,
   }) : super(key: key);
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  State<MainLayout> createState() => MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
-  bool _isFocused = false;
-  final FocusNode _focusNode = FocusNode();
-  final Color _cardWhite = Color(0xFFFFFFFF);
+class MainLayoutState extends State<MainLayout> {
   final Color _textPrimary = Color(0xFF1E293B);
   final Color _textSecondary = Color(0xFF64748B);
   final Color _borderColor = Color(0xFFE2E8F0);
   final Color _hoverColor = Color(0xFFF1F5F9);
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
-  final bool _isSearchFocused = false;
+  bool _isDarkMode = false;
+  int? _activeMenu;
 
-  @override
-  void initState() {
-    super.initState();
-    _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
+  Color get _iconColor => _isDarkMode ? Colors.grey.shade400 : _textSecondary;
+  Color get _iconHoverBg => _isDarkMode ? Colors.grey.shade800 : _hoverColor;
+  Color get _appBarBg => _isDarkMode ? Color(0xFF1E1E1E) : Color(0xFFF4F4F4);
+  Color get _appBarBorder => _isDarkMode ? Colors.grey.shade800 : _borderColor;
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<TopNavProvider>(
-      create: (_) => TopNavProvider(),
+    return ChangeNotifierProvider<R_TopNavProvider>(
+      create: (_) => R_TopNavProvider(),
       child: RepaintBoundary(child: _buildScaffold(context)),
     );
   }
 
   Widget _buildScaffold(BuildContext context) {
-    final primaryColor = Theme
-        .of(context)
-        .primaryColor;
-    final backgroundGray =    Color(0xFFF5F8FA);
-    final initials = context.watch<TopNavProvider>().initials;
+    final primaryColor = Theme.of(context).primaryColor;
+    final initials = context.watch<R_TopNavProvider>().initials;
+
     return Scaffold(
-      backgroundColor: backgroundGray,
-      body: Row(
+      backgroundColor: Color(0xFFFAFAFA),
+      body: Column(
         children: [
-          RepaintBoundary(
-            child: Container(
-              width: 240,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: backgroundGray,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    offset:    Offset(2, 0), // Right-side shadow
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                // ensure rounded corners clip scrollable content
-                borderRadius: BorderRadius.circular(12),
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.zero,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                         SizedBox(height: 24),
-
-                      // ─── Logo inside Side Nav ───
-                      Padding(
-                        padding:    EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'LOGO_HERE',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ),
-                         SizedBox(height: 24),
-                      Divider(
-                        thickness: 1,
-                        color: Color(0xFFCCCCCC),
-                      ),
-                         SizedBox(height: 24),
-                      _buildUserProfileSection(primaryColor),
-                         SizedBox(height: 12),
-                         Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Divider(
-                          thickness: 1,
-                          color: Color(0xFFCCCCCC),
-                        ),
-                      ),
-                         SizedBox(height: 16),
-
-                      // ─── Dashboard Button ───
-                      Padding(
-                        padding:    EdgeInsets.symmetric(horizontal: 16),
-                        child: _SideNavButton(
-                          icon: Icons.dashboard_outlined,
-                          label: 'Dashboard',
-                          isActive: widget.activeIndex == 0,
-                          onTap: () {
-                            if (widget.activeIndex != 0) {
-                              context.go('/dashboard');
-                            }
-                          },
-                        ),
-                      ),
-                         SizedBox(height: 8),
-
-                      // ─── Create Profile Button ───
-                      Padding(
-                        padding:    EdgeInsets.symmetric(horizontal: 16),
-                        child: _SideNavButton(
-                          icon: Icons.person_outline,
-                          label: 'Create Profile',
-                          isActive: widget.activeIndex == 1,
-                          onTap: () {
-                            if (widget.activeIndex != 1) {
-                              context.go('/profile');
-                            }
-                          },
-                        ),
-                      ),
-                         SizedBox(height: 8),
-
-                      // ─── Saved Jobs ───
-                      Padding(
-                        padding:    EdgeInsets.symmetric(horizontal: 16),
-                        child: _SideNavButton(
-                          icon: Icons.bookmark_border,
-                          label: 'Saved Jobs',
-                          isActive: widget.activeIndex == 2,
-                          onTap: () {
-                            if (widget.activeIndex != 2) {
-                              context.go('/saved');
-                            }
-                          },
-                        ),
-                      ),
-                         SizedBox(height: 8),
-
-                      // ─── Job Alerts ───
-                      Padding(
-                        padding:    EdgeInsets.symmetric(horizontal: 16),
-                        child: _SideNavButton(
-                          icon: Icons.notifications_none,
-                          label: 'Job Alerts',
-                          isActive: widget.activeIndex == 3,
-                          onTap: () {
-                            if (widget.activeIndex != 3) {
-                              context.go('/alerts');
-                            }
-                          },
-                        ),
-                      ),
-                         SizedBox(height: 16),
-
-                      // ─── Bottom Divider + Logout ───
-                         Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Divider(
-                          thickness: 1,
-                          color: Color(0xFFCCCCCC),
-                        ),
-                      ),
-                         SizedBox(height: 8),
-                      Padding(
-                        padding:    EdgeInsets.symmetric(horizontal: 16),
-                        child: _LogoutButton(
-                          key:    ValueKey('nav_logout'),
-                          onTap: () async{
-                            // handle logout
-                            await FirebaseAuth.instance.signOut();
-                            context.pushReplacement('/login');
-                          },
-                        ),
-                      ),
-                         SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // ─── Right Side: Top Bar (without Logo) + Main Content ───
+          _buildHeaderTopBar(primaryColor, initials),
           Expanded(
-            child: Column(
-              children: [
-                // ─── Top Bar (Search, Notification, Avatar) ───
-                _buildTopBar(primaryColor, initials),
-                // ─── Main Content Area ────────────────────────
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration:    Duration(milliseconds: 300),
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin:    Offset(0.0, 0.1),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: widget.child,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.0, 0.1),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
-                ),
-              ],
+                );
+              },
+              child: widget.child,
             ),
           ),
         ],
@@ -247,210 +75,305 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  Widget _buildTopBar(Color primaryColor, String initials) {
+  Widget _buildHeaderTopBar(Color primaryColor, String initials) {
     return Container(
-      height: 70,
-      width: 800,
+      height: 80,
       decoration: BoxDecoration(
-        color: _cardWhite,
-        borderRadius:    BorderRadius.only(
+        color: _appBarBg,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 12,
-            offset:    Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset:    Offset(0, 2),
-          ),
-        ],
         border: Border(
-          bottom: BorderSide(
-            color: _borderColor,
-            width: 1,
-          ),
+          bottom: BorderSide(color: _appBarBorder, width: 1),
         ),
       ),
-      padding:    EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
         children: [
-          // ─── Enhanced Search Field ───
-          Expanded(
-            flex: 2,
-            child: Container(
-              height: 48,
-                constraints:    BoxConstraints(maxWidth: 480),
-              decoration: BoxDecoration(
-                color: _isSearchFocused ? _cardWhite : _hoverColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _isSearchFocused ? primaryColor : _borderColor,
-                  width: _isSearchFocused ? 2 : 1,
-                ),
-                boxShadow: _isSearchFocused
-                    ? [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset:    Offset(0, 2),
-                  ),
-                ]
-                    : null,
-              ),
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                style: GoogleFonts.montserrat(
-                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: _textPrimary,
-                  height: 1.2,
-                ),
-                decoration: InputDecoration(
-                  filled: false,
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: _isSearchFocused ? primaryColor : _textSecondary,
-                    size: 20,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {});
-                    },
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: _textSecondary,
-                      size: 18,
-                    ),
-                    splashRadius: 16,
-                  )
-                      : null,
-                  hintText: 'Search jobs, companies, or keywords...',
-                  hintStyle:  GoogleFonts.montserrat(
-                       fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: _textSecondary,
-                    height: 1.2,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding:    EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: (value) => setState(() {}),
-                onSubmitted: (value) {
-                  debugPrint('Search: $value');
-                },
-              ),
+          // Logo
+          Text(
+            'LOGO_HERE',
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: primaryColor,
             ),
           ),
 
-             Spacer(),
+          const Spacer(),
 
-          // ─── Quick Actions ───
-          Row(
+          // Navigation Items
+          _buildNavItem(
+            icon: Icons.dashboard_outlined,
+            label: 'Dashboard',
+            isActive: widget.activeIndex == 0,
+            onTap: () {
+              if (widget.activeIndex != 0) {
+                context.go('/dashboard');
+              }
+            },
+
+          ),
+          const SizedBox(width: 16),
+
+          _buildNavItem(
+            icon: Icons.person_outline,
+            label: 'Create Profile',
+            isActive: widget.activeIndex == 1,
+            onTap: () {
+              if (widget.activeIndex != 1) {
+                context.go('/profile');
+              }
+            },
+          ),
+          const SizedBox(width: 16),
+
+          _buildNavItem(
+
+            icon: Icons.bookmark_border,
+            label: 'Saved Jobs',
+            isActive: widget.activeIndex == 2,
+            onTap: () {
+              if (widget.activeIndex != 2) {
+                context.go('/saved');
+              }
+            },
+          ),
+          const SizedBox(width: 16),
+
+          _buildNavItem(
+            icon: Icons.notifications_none,
+            label: 'Job Alerts',
+            isActive: widget.activeIndex == 3,
+            onTap: () {
+              if (widget.activeIndex != 3) {
+                context.go('/alerts');
+              }
+            },
+
+          ),
+
+
+
+
+          const SizedBox(width: 16),
+
+          _buildIconButton(
+            tooltip: 'Quick Links',
+            icon: Icons.apps_rounded,
+            onPressed: () => _showQuickLinks(context),
+            isActive: _activeMenu == 2,
+          ),
+
+          const SizedBox(width: 8),
+
+          _buildIconButton(
+            tooltip: 'Notifications',
+            icon: Icons.notifications_none_rounded,
+            activeIcon: Icons.notifications_rounded,
+            onPressed: () => setState(() => _activeMenu = 0),
+            badge: 3,
+            isActive: _activeMenu == 0,
+          ),
+
+          const SizedBox(width: 8),
+
+          _buildIconButton(
+            tooltip: 'Messages',
+            icon: Icons.chat_bubble_outline_rounded,
+            activeIcon: Icons.chat_bubble_rounded,
+            onPressed: () => setState(() => _activeMenu = 1),
+            isActive: _activeMenu == 1,
+          ),
+
+          VerticalDivider(
+            color: _appBarBorder,
+            width: 24,
+            thickness: 1,
+            indent: 10,
+            endIndent: 10,
+          ),
+
+          _buildIconButton(
+            tooltip: 'Help & Support',
+            icon: Icons.help_outline_rounded,
+            onPressed: () => _showHelpCenter(context),
+          ),
+
+          const SizedBox(width: 8),
+
+          _buildIconButton(
+            tooltip: _isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            icon: _isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+            onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
+          ),
+
+          const SizedBox(width: 16),
+
+          _buildProfileMenu(primaryColor, initials),
+          const SizedBox(width: 16),
+
+          _buildLogoutButton(),
+
+
+        ],
+      ),
+    );
+  }
+  Widget _buildLogoutButton() {
+    return _HorizontalLogoutButton(
+      onTap: () => _showLogoutDialog(context),
+    );
+  }
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    final primaryColor = Theme.of(context).primaryColor;
+    final unselectedColor = const Color(0xFF5C738A);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
+          height: 35,
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isActive ? primaryColor.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Notifications with badge
-              _buildIconButton(
-                icon: Icons.notifications_none_rounded,
-                onPressed: () => _showNotifications(context),
-                badge: 3, // Example badge count
+              Icon(
+                icon,
+                color: isActive ? primaryColor : unselectedColor,
+                size: 25,
               ),
-
-                 SizedBox(width: 12),
-
-              // Messages
-              _buildIconButton(
-                icon: Icons.chat_bubble_outline_rounded,
-                onPressed: () => _showMessages(context),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isActive ? primaryColor : unselectedColor,
+                ),
               ),
-
-                 SizedBox(width: 16),
-
-              // Profile Menu
-              _buildProfileMenu(primaryColor, initials),
             ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrimaryActionButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(text),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).primaryColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
       ),
     );
   }
 
   Widget _buildIconButton({
+    required String tooltip,
     required IconData icon,
+    IconData? activeIcon,
     required VoidCallback onPressed,
     int? badge,
+    bool isActive = false,
   }) {
-    return Stack(
-      children: [
-        IconButton(
-          onPressed: onPressed,
-          icon: Icon(
-            icon,
-            color: _textSecondary,
-            size: 30,
-          ),
-          splashRadius: 20,
-          tooltip: 'Notifications',
-        ),
-        if (badge != null && badge > 0)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding:    EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.red.shade500,
-                borderRadius: BorderRadius.circular(8),
-              ),
-                constraints:BoxConstraints(
-                minWidth: 20,
-                minHeight: 20,
-              ),
-              child: Text(
-                badge > 99 ? '99+' : badge.toString(),
-                style:     GoogleFonts.montserrat(
-                   fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+    final hoverProvider = ValueNotifier<bool>(false);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: hoverProvider,
+      builder: (context, isHovering, child) {
+        final isHighlighted = isHovering || isActive;
+        return Tooltip(
+          message: tooltip,
+          waitDuration: const Duration(milliseconds: 500),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              InkWell(
+                onTap: onPressed,
+                onHover: (value) => hoverProvider.value = value,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isHighlighted ? _iconHoverBg : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isActive ? (activeIcon ?? icon) : icon,
+                    color: isActive ? Theme.of(context).primaryColor : _iconColor,
+                    size: 24,
+                  ),
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
+              if (badge != null && badge > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade500,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _appBarBg, width: 2),
+                    ),
+                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                    child: Text(
+                      badge.toString(),
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildProfileMenu(Color primaryColor, String initials) {
     return PopupMenuButton<String>(
-      offset:    Offset(0, 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      offset: const Offset(0, 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
-        padding:    EdgeInsets.all(2),
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: _borderColor,
-            width: 2,
-          ),
+          border: Border.all(color: _borderColor, width: 2),
         ),
         child: CircleAvatar(
           radius: 18,
           backgroundColor: primaryColor,
           child: Text(
             initials.isNotEmpty ? initials : 'ZA',
-            style:     GoogleFonts.montserrat(
+            style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -458,37 +381,24 @@ class _MainLayoutState extends State<MainLayout> {
           ),
         ),
       ),
-      itemBuilder: (context) =>
-      [
-        _buildPopupMenuItem('Profile', Icons.person_outline_rounded, () {
-          context.go('/profile');
-        }),
-        _buildPopupMenuItem('Settings', Icons.settings_outlined, () {
-          // Handle settings
-        }),
-        _buildPopupMenuItem('Help', Icons.help_outline_rounded, () {
-          // Handle help
-        }),
-           PopupMenuDivider(),
+      itemBuilder: (context) => [
+        _buildPopupMenuItem('Profile', Icons.person_outline_rounded, () => context.go('/profile')),
+        _buildPopupMenuItem('Settings', Icons.settings_outlined, () => context.go('/')),
+        _buildPopupMenuItem('Help', Icons.help_outline_rounded, () {}),
+        const PopupMenuDivider(),
         PopupMenuItem<String>(
           value: 'logout',
-          onTap: () {
-            _showLogoutDialog(context);
-          },
+          onTap: () => _showLogoutDialog(context),
           child: Row(
             children: [
-              Icon(
-                Icons.logout_rounded,
-                size: 18,
-                color: Colors.red.shade500,
-              ),
-                 SizedBox(width: 12),
-                 Flexible(
+              Icon(Icons.logout_rounded, size: 18, color: Colors.red.shade500),
+              const SizedBox(width: 12),
+              Flexible(
                 child: Text(
                   'Logout',
                   overflow: TextOverflow.ellipsis,
-                  style:  GoogleFonts.montserrat(
-                       fontSize: 14,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.red,
                   ),
@@ -501,27 +411,19 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  PopupMenuItem<String> _buildPopupMenuItem(String title,
-      IconData icon,
-      VoidCallback onTap, {
-        bool isDestructive = false,
-      }) {
+  PopupMenuItem<String> _buildPopupMenuItem(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
     return PopupMenuItem<String>(
       value: title.toLowerCase(),
       onTap: onTap,
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: isDestructive ? Colors.red.shade500 : _textSecondary,
-          ),
-             SizedBox(width: 12),
+          Icon(icon, size: 18, color: isDestructive ? Colors.red.shade500 : _textSecondary),
+          const SizedBox(width: 12),
           Flexible(
             child: Text(
               title,
               overflow: TextOverflow.ellipsis,
-              style:  GoogleFonts.montserrat(
+              style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isDestructive ? Colors.red.shade500 : _textPrimary,
@@ -533,282 +435,60 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  void _showNotifications(BuildContext context) {
-    // Placeholder: show a bottom sheet or dialog
+  void _showQuickLinks(BuildContext context) => print('Showing Quick Links menu');
+  void _showHelpCenter(BuildContext context) => print('Showing Help Center');
+
+  void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title:    Text('Notifications'),
-        content:    Text('You have new notifications.'),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Confirm Logout', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        content: Text('Are you sure you want to logout?', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child:    Text('Close'),
+            child: const Text('Cancel'),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showMessages(BuildContext context) {
-    // Placeholder: show a bottom sheet or dialog
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title:    Text('Messages'),
-        content:    Text('You have new messages.'),
-        actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child:    Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) =>
-          AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title:    Text(
-              'Confirm Logout',
-              style:  GoogleFonts.montserrat(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            content:    Text(
-              'Are you sure you want to logout?',
-              style:  GoogleFonts.montserrat(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child:    Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: ()async {
-
-                    await FirebaseAuth.instance.signOut();
-                    context.pushReplacement('/login');
-
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                ),
-                child:    Text('Logout'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  Widget _buildUserProfileSection(Color primaryColor) {
-    return Container(
-      margin:    EdgeInsets.symmetric(horizontal: 10),
-      padding:    EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: primaryColor.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child:    Icon(
-                  Icons.person_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-                 SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Zain Ali',
-                      style:  GoogleFonts.montserrat(
-                               fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _textPrimary,
-                      ),
-                    ),
-                       SizedBox(height: 2),
-                    Text(
-                      'Full Stack Developer',
-                      style:  GoogleFonts.montserrat(
-                               fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: _textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-             SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => context.go('/profile'),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: primaryColor,
-                padding:    EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child:    Text(
-                'View Profile',
-                style:  GoogleFonts.montserrat(
-                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              context.pushReplacement('/');
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Logout'),
           ),
         ],
       ),
     );
   }
 }
-/// Single navigation button in the side-rail.
-/// Highlights itself if isActive == true.
-class _SideNavButton extends StatefulWidget {
-  final IconData icon;
-  final String label;
-  final bool isActive;
+/// Horizontal logout button for the top navigation bar
+class _HorizontalLogoutButton extends StatefulWidget {
   final VoidCallback onTap;
 
-     _SideNavButton({
-    required this.icon,
-    required this.label,
-    required this.isActive,
+  const _HorizontalLogoutButton({
     required this.onTap,
-  }) : super();
+  });
 
   @override
-  State<_SideNavButton> createState() => _SideNavButtonState();
+  State<_HorizontalLogoutButton> createState() => _HorizontalLogoutButtonState();
 }
 
-class _SideNavButtonState extends State<_SideNavButton> {
+class _HorizontalLogoutButtonState extends State<_HorizontalLogoutButton> {
   bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-    final unselectedColor =    Color(0xFF5C738A);
+    final unselectedColor = Color(0xFFFAFAFA);
 
     Color bgColor() {
-      if (widget.isActive) {
-        return primaryColor.withOpacity(0.1);
-      } else if (_isHovered) {
-        return primaryColor.withOpacity(0.05);
-      } else {
-        return Colors.transparent;
-      }
+      if (_isHovered) return Colors.red.shade50;
+      return Colors.transparent;
     }
 
     Color iconColor() {
-      if (widget.isActive) return primaryColor;
-      if (_isHovered) return primaryColor;
-      return unselectedColor;
-    }
-
-    Color textColor() {
-      if (widget.isActive) return primaryColor;
-      if (_isHovered) return primaryColor;
-      return unselectedColor;
-    }
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration:    Duration(milliseconds: 150),
-          height: 48,
-          width: double.infinity,
-          padding:    EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: bgColor(),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Icon(widget.icon, color: iconColor()),
-                 SizedBox(width: 12),
-              Text(
-                widget.label,
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: textColor(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LogoutButton extends StatefulWidget {
-  final VoidCallback onTap;
-  final Key? key;
-
-     _LogoutButton({
-    this.key,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  State<_LogoutButton> createState() => _LogoutButtonState();
-}
-
-class _LogoutButtonState extends State<_LogoutButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final unselectedColor =    Color(0xFF5C738A);
-
-    Color bgColor() {
-      if (_isHovered) return Colors.red.shade100;
-      return Color(0xFFF5F8FA);
-    }
-
-    Color iconColor() {
-      if (_isHovered) return Colors.red;
-      return unselectedColor;
-    }
-
-    Color textColor() {
-      if (_isHovered) return Colors.red;
+      if (_isHovered) return Colors.red.shade600;
       return unselectedColor;
     }
 
@@ -818,51 +498,22 @@ class _LogoutButtonState extends State<_LogoutButton> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: () => _logout(context),
-
+        onTap: widget.onTap,
         child: AnimatedContainer(
-          duration:    Duration(milliseconds: 150),
-          height: 48,
-
-          width: double.infinity,
-          padding:    EdgeInsets.symmetric(horizontal: 16),
+          duration: Duration(milliseconds: 150),
+          height: 40,
+          width: 40,
           decoration: BoxDecoration(
-
             color: bgColor(),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Row(
-            children: [
-              Icon(Icons.logout, color: iconColor()),
-                 SizedBox(width: 12),
-              Text(
-                'Logout',
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: textColor(),
-                ),
-              ),
-            ],
+          child: Icon(
+            Icons.logout_rounded,
+            color: iconColor(),
+            size: 20,
           ),
         ),
       ),
     );
   }
-  // In your dashboard screen's state widget (e.g., _JobSeekerDashboardState)
-
-  Future<void> _logout(BuildContext context) async {
-    // First, sign out the user from Firebase.
-    await FirebaseAuth.instance.signOut();
-
-    // IMPORTANT: Then, use context.go() to navigate.
-    // This clears the entire navigation stack and pushes '/login' as the new
-    // base route. This prevents the user from pressing the browser's back
-    // button to get back to the dashboard.
-    if (context.mounted) {
-      context.pushReplacement('/login');
-    }
-  }
-
-
 }

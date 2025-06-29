@@ -4,11 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/flutter_svg.dart' show  SvgPicture;
 
 import '../../Constant/Header_Nav.dart';
-import 'Signup_Provider.dart';
 import 'login_provider.dart'; // Assume this provider also has a `login(...)` method
 
 class JobSeekerLoginScreen extends StatefulWidget {
