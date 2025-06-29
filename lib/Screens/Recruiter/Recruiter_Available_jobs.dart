@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -8,198 +8,190 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:job_portal/Screens/Recruiter/job_detail_dialog_recrutier.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class JobListVIew extends StatefulWidget {
+
+class JobListView extends StatefulWidget {
   final List<Map<String, dynamic>> jobs;
-  const JobListVIew({super.key, required this.jobs});
+  const JobListView({Key? key, required this.jobs}) : super(key: key);
 
   @override
-  State<JobListVIew> createState() => _JobListVIewState();
+  State<JobListView> createState() => _JobListViewState();
 }
 
-class _JobListVIewState extends State<JobListVIew> with TickerProviderStateMixin {
+class _JobListViewState extends State<JobListView>
+    with TickerProviderStateMixin {
+  // Controllers & animations
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  late AnimationController _animationController;
-  late AnimationController _filterAnimationController;
+  late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
-
-  List<Map<String, dynamic>> _filteredJobs = [];
-  bool _showFilters = false;
-  bool _isSearching = false;
   Timer? _debounceTimer;
 
-  // Filter states
-  final Set<String> _selectedCompanies = {};
-  final Set<String> _selectedDepartments = {};
-  final Set<String> _selectedLocations = {};
-  final Set<String> _selectedJobTypes = {};
-  final Set<String> _selectedExperienceLevels = {};
+  // Data
+  List<Map<String, dynamic>> _filteredJobs = [];
+
+  // Filters
+  String? _selectedCompany;
+  String? _selectedDepartment;
+  String? _selectedLocation;
+  String? _selectedJobType;
+  String? _selectedExperience;
+  String? _selectedSalaryType;
+  String? _selectedRank;
+  String? _selectedClearance;
+  RangeValues _salaryRange = const RangeValues(0, 200000);
+  final Set<String> _selectedBenefits = {};
   String _selectedSortOption = 'newest';
+
+  // UI State
+  bool _isSidebarCollapsed = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
     _filteredJobs = List.from(widget.jobs);
+    _fadeController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 350));
+    _fadeAnimation =
+        CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut);
+    _fadeController.forward();
     _searchController.addListener(_onSearchChanged);
+    _initializeSalaryRange();
   }
 
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
+  void _initializeSalaryRange() {
+    final salaries = widget.jobs.map(_parseSalary).whereType<double>().toList();
+    if (salaries.isNotEmpty) {
+      final min = salaries.reduce((a, b) => a < b ? a : b);
+      final max = salaries.reduce((a, b) => a > b ? a : b);
+      _salaryRange = RangeValues(min, max);
+    }
+  }
 
-    _filterAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
-    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
-    );
-
-    _animationController.forward();
+  double? _parseSalary(Map<String, dynamic> job) {
+    final s = job['salary']?.toString() ?? '';
+    final m = RegExp(r'\d+(?:,\d{3})*').firstMatch(s);
+    return m != null ? double.tryParse(m.group(0)!.replaceAll(',', '')) : null;
   }
 
   void _onSearchChanged() {
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      _filterJobs();
-    });
-
-    setState(() {
-      _isSearching = _searchController.text.isNotEmpty;
-    });
+    _debounceTimer = Timer(const Duration(milliseconds: 350), _applyFilters);
   }
 
-  void _filterJobs() {
+  void _applyFilters() {
     final query = _searchController.text.toLowerCase();
-
     setState(() {
       _filteredJobs = widget.jobs.where((job) {
         // Search filter
         if (query.isNotEmpty) {
-          final title = (job['title'] as String? ?? '').toLowerCase();
-          final company = (job['company'] as String? ?? '').toLowerCase();
-          final description = (job['description'] as String? ?? '').toLowerCase();
-          final skills = (job['skills'] as List<dynamic>?)?.map((s) => s.toString().toLowerCase()).join(' ') ?? '';
-
-          final searchMatch = title.contains(query) ||
-              company.contains(query) ||
-              description.contains(query) ||
-              skills.contains(query);
-
-          if (!searchMatch) return false;
+          final searchText =
+          '${job['title']} ${job['company']} ${job['description']} ${(job['skills'] as List?)?.join(' ') ?? ''}'
+              .toLowerCase();
+          if (!searchText.contains(query)) return false;
         }
 
-        // Company filter
-        if (_selectedCompanies.isNotEmpty) {
-          final company = job['company'] as String? ?? '';
-          if (!_selectedCompanies.contains(company)) return false;
-        }
+        // Dropdown filters
+        if (_selectedCompany != null && job['company'] != _selectedCompany)
+          return false;
+        if (_selectedDepartment != null &&
+            job['department'] != _selectedDepartment) return false;
+        if (_selectedLocation != null && job['location'] != _selectedLocation)
+          return false;
+        if (_selectedJobType != null && job['nature'] != _selectedJobType)
+          return false;
+        if (_selectedExperience != null &&
+            job['experience'] != _selectedExperience) return false;
+        if (_selectedSalaryType != null &&
+            job['salaryType'] != _selectedSalaryType) return false;
+        if (_selectedRank != null && job['rankRequirement'] != _selectedRank)
+          return false;
+        if (_selectedClearance != null &&
+            job['securityClearance'] != _selectedClearance) return false;
 
-        // Department filter
-        if (_selectedDepartments.isNotEmpty) {
-          final department = job['department'] as String? ?? '';
-          if (!_selectedDepartments.contains(department)) return false;
-        }
+        // Salary range
+        final sal = _parseSalary(job);
+        if (sal != null && (sal < _salaryRange.start || sal > _salaryRange.end))
+          return false;
 
-        // Location filter
-        if (_selectedLocations.isNotEmpty) {
-          final location = job['location'] as String? ?? '';
-          if (!_selectedLocations.contains(location)) return false;
-        }
-
-        // Job type filter
-        if (_selectedJobTypes.isNotEmpty) {
-          final jobType = job['nature'] as String? ?? '';
-          if (!_selectedJobTypes.contains(jobType)) return false;
-        }
-
-        // Experience filter
-        if (_selectedExperienceLevels.isNotEmpty) {
-          final experience = job['experience'] as String? ?? '';
-          if (!_selectedExperienceLevels.contains(experience)) return false;
+        // Benefits
+        if (_selectedBenefits.isNotEmpty) {
+          final benefits =
+              (job['benefits'] as List?)?.cast<String>().toSet() ?? {};
+          if (!_selectedBenefits.any(benefits.contains)) return false;
         }
 
         return true;
       }).toList();
-
-      // Sort jobs
-      _sortJobs();
+      _sortResults();
     });
   }
 
-  void _sortJobs() {
+  void _sortResults() {
     switch (_selectedSortOption) {
       case 'newest':
-        _filteredJobs.sort((a, b) {
-          final aTime = (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(1970);
-          final bTime = (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(1970);
-          return bTime.compareTo(aTime);
-        });
+        _filteredJobs.sort((a, b) =>
+            ((b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0)).compareTo(
+                (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0)));
         break;
       case 'oldest':
-        _filteredJobs.sort((a, b) {
-          final aTime = (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(1970);
-          final bTime = (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(1970);
-          return aTime.compareTo(bTime);
-        });
+        _filteredJobs.sort((a, b) =>
+            ((a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0)).compareTo(
+                (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0)));
         break;
       case 'company':
-        _filteredJobs.sort((a, b) {
-          final aCompany = a['company'] as String? ?? '';
-          final bCompany = b['company'] as String? ?? '';
-          return aCompany.compareTo(bCompany);
-        });
+        _filteredJobs
+            .sort((a, b) => (a['company'] ?? '').compareTo(b['company'] ?? ''));
         break;
     }
   }
 
-  void _toggleFilters() {
-    setState(() {
-      _showFilters = !_showFilters;
-    });
-
-    if (_showFilters) {
-      _filterAnimationController.forward();
-    } else {
-      _filterAnimationController.reverse();
-    }
-  }
-
-  void _clearAllFilters() {
-    setState(() {
-      _selectedCompanies.clear();
-      _selectedDepartments.clear();
-      _selectedLocations.clear();
-      _selectedJobTypes.clear();
-      _selectedExperienceLevels.clear();
-      _selectedSortOption = 'newest';
-      _searchController.clear();
-    });
-    _filterJobs();
-  }
-
-  List<String> _getUniqueValues(String field) {
+  List<String> _getUnique(String field) {
     return widget.jobs
-        .map((job) => job[field] as String? ?? '')
-        .where((value) => value.isNotEmpty)
+        .map((j) => j[field] as String? ?? '')
+        .where((s) => s.isNotEmpty)
         .toSet()
         .toList()
       ..sort();
   }
 
+  List<String> _getUniqueList(String field) {
+    final all = <String>{};
+    for (var j in widget.jobs) {
+      (j[field] as List?)?.cast<String>().forEach(all.add);
+    }
+    return all.toList()..sort();
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _searchController.clear();
+      _selectedCompany = _selectedDepartment = _selectedLocation =
+          _selectedJobType = _selectedExperience =
+          _selectedSalaryType = _selectedRank = _selectedClearance = null;
+      _selectedBenefits.clear();
+      _salaryRange = const RangeValues(0, 200000);
+      _selectedSortOption = 'newest';
+    });
+    _applyFilters();
+  }
+
+  int get _activeFiltersCount {
+    int count = 0;
+    if (_selectedCompany != null) count++;
+    if (_selectedDepartment != null) count++;
+    if (_selectedLocation != null) count++;
+    if (_selectedJobType != null) count++;
+    if (_selectedExperience != null) count++;
+    if (_selectedSalaryType != null) count++;
+    if (_selectedRank != null) count++;
+    if (_selectedClearance != null) count++;
+    if (_selectedBenefits.isNotEmpty) count++;
+    return count;
+  }
+
   @override
   void dispose() {
-    _animationController.dispose();
-    _filterAnimationController.dispose();
+    _fadeController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _debounceTimer?.cancel();
@@ -208,455 +200,582 @@ class _JobListVIewState extends State<JobListVIew> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: Transform.translate(
-            offset: Offset(0, _slideAnimation.value),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                _buildSearchAndFilters(),
-                if (_showFilters) _buildFilterSection(),
-                _buildJobCount(),
-                Expanded(child: _buildJobsList()),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Row(
-        children: [
-          Icon(
-            Icons.work_outline,
-            size: 28,
-            color: const Color(0xFF1E293B),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'Live Jobs',
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
-            ),
-            child: Text(
-              '${widget.jobs.length} Active',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF10B981),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchAndFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(child: _buildSearchBar()),
-          const SizedBox(width: 12),
-          _buildFilterButton(),
-          const SizedBox(width: 8),
-          _buildSortButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _isSearching ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
-          width: _isSearching ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        focusNode: _searchFocusNode,
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          color: const Color(0xFF1E293B),
-        ),
-        decoration: InputDecoration(
-          hintText: 'Search jobs, companies, skills...',
-          hintStyle: GoogleFonts.inter(
-            fontSize: 14,
-            color: const Color(0xFF64748B),
-          ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: _isSearching ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
-            size: 20,
-          ),
-          suffixIcon: _isSearching
-              ? IconButton(
-            icon: const Icon(Icons.clear, size: 18),
-            onPressed: () {
-              _searchController.clear();
-              _searchFocusNode.unfocus();
-            },
-            color: const Color(0xFF64748B),
-          )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterButton() {
-    final hasActiveFilters = _selectedCompanies.isNotEmpty ||
-        _selectedDepartments.isNotEmpty ||
-        _selectedLocations.isNotEmpty ||
-        _selectedJobTypes.isNotEmpty ||
-        _selectedExperienceLevels.isNotEmpty;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _toggleFilters,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _showFilters ? const Color(0xFF3B82F6) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: hasActiveFilters ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: Row(
+          children: [
+            // Left Sidebar - Filters Panel
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: _isSidebarCollapsed ? 60 : 350,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  right: BorderSide(color: Color(0xFFE2E8F0), width: 1),
                 ),
-              ],
+              ),
+              child: _isSidebarCollapsed
+                  ? _buildCollapsedSidebar()
+                  : _buildExpandedSidebar(),
             ),
-            child: Stack(
-              children: [
-                Icon(
-                  Icons.tune,
-                  color: _showFilters ? Colors.white : const Color(0xFF64748B),
-                  size: 20,
-                ),
-                if (hasActiveFilters)
-                  Positioned(
-                    right: -2,
-                    top: -2,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+
+            // Main Content Area
+            Expanded(
+              child: Column(
+                children: [
+                  // Top Header with Search and Sort
+                  _buildTopHeader(),
+
+                  // Job Cards List
+                  Expanded(
+                    child: _buildJobsList(),
                   ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSortButton() {
-    return PopupMenuButton<String>(
-      initialValue: _selectedSortOption,
-      onSelected: (value) {
-        setState(() {
-          _selectedSortOption = value;
-        });
-        _filterJobs();
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+                ],
+              ),
             ),
           ],
         ),
-        child: const Icon(
-          Icons.sort,
-          color: Color(0xFF64748B),
-          size: 20,
-        ),
       ),
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'newest',
-          child: Text('Newest First'),
+    );
+  }
+
+  Widget _buildCollapsedSidebar() {
+    return Column(
+      children: [
+        // Expand button
+        Container(
+          height: 60,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+          ),
+          child: IconButton(
+            onPressed: () => setState(() => _isSidebarCollapsed = false),
+            icon: const Icon(Icons.menu, color: Color(0xFF374151)),
+            tooltip: 'Expand Filters',
+          ),
         ),
-        const PopupMenuItem(
-          value: 'oldest',
-          child: Text('Oldest First'),
+
+        // Filter count indicator
+        if (_activeFiltersCount > 0)
+          Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.filter_list, color: Colors.white, size: 20),
+                const SizedBox(height: 4),
+                Text('$_activeFiltersCount',
+                    style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildExpandedSidebar() {
+    return Column(
+      children: [
+        // Sidebar Header
+        Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.tune, size: 24, color: const Color(0xFF374151)),
+              const SizedBox(width: 12),
+              Text('Filters & Search',
+                  style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF374151))),
+              const Spacer(),
+              if (_activeFiltersCount > 0) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text('$_activeFiltersCount',
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
+                ),
+                const SizedBox(width: 8),
+              ],
+              IconButton(
+                onPressed: () => setState(() => _isSidebarCollapsed = true),
+                icon: const Icon(Icons.chevron_left, color: Color(0xFF374151)),
+                tooltip: 'Collapse Filters',
+              ),
+            ],
+          ),
         ),
-        const PopupMenuItem(
-          value: 'company',
-          child: Text('Company A-Z'),
+
+        // Scrollable Filters Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search Section
+                _buildSearchSection(),
+                const SizedBox(height: 24),
+
+                // Clear Filters Button
+                if (_activeFiltersCount > 0) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _clearFilters,
+                      icon: const Icon(Icons.clear_all, size: 18),
+                      label: const Text('Clear All Filters'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF3B82F6),
+                        side: const BorderSide(color: Color(0xFF3B82F6)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Basic Filters
+                _buildFilterSection('Basic Filters', [
+                  _buildDropdown(
+                      'Company',
+                      _selectedCompany,
+                      _getUnique('company'),
+                          (v) => setState(() => _selectedCompany = v)),
+                  const SizedBox(height: 12),
+                  _buildDropdown(
+                      'Location',
+                      _selectedLocation,
+                      _getUnique('location'),
+                          (v) => setState(() => _selectedLocation = v)),
+                  const SizedBox(height: 12),
+                  _buildDropdown(
+                      'Job Type',
+                      _selectedJobType,
+                      _getUnique('nature'),
+                          (v) => setState(() => _selectedJobType = v)),
+                ]),
+
+                const SizedBox(height: 24),
+
+                // Advanced Filters
+                _buildFilterSection('Advanced Filters', [
+                  _buildDropdown(
+                      'Department',
+                      _selectedDepartment,
+                      _getUnique('department'),
+                          (v) => setState(() => _selectedDepartment = v)),
+                  const SizedBox(height: 12),
+                  _buildDropdown(
+                      'Experience Level',
+                      _selectedExperience,
+                      _getUnique('experience'),
+                          (v) => setState(() => _selectedExperience = v)),
+                  const SizedBox(height: 12),
+                  _buildDropdown(
+                      'Salary Type',
+                      _selectedSalaryType,
+                      _getUnique('salaryType'),
+                          (v) => setState(() => _selectedSalaryType = v)),
+                ]),
+
+                const SizedBox(height: 24),
+
+                // Salary Range
+                _buildSalaryRangeSection(),
+
+                const SizedBox(height: 24),
+
+                // Benefits
+                _buildBenefitsSection(),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildFilterSection() {
-    return AnimatedBuilder(
-      animation: _filterAnimationController,
-      builder: (context, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, -0.5),
-            end: Offset.zero,
-          ).animate(_filterAnimationController),
-          child: FadeTransition(
-            opacity: _filterAnimationController,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Filters',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1E293B),
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: _clearAllFilters,
-                        child: Text(
-                          'Clear All',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF3B82F6),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFilterChips('Companies', _getUniqueValues('company'), _selectedCompanies),
-                  _buildFilterChips('Departments', _getUniqueValues('department'), _selectedDepartments),
-                  _buildFilterChips('Locations', _getUniqueValues('location'), _selectedLocations),
-                  _buildFilterChips('Job Types', _getUniqueValues('nature'), _selectedJobTypes),
-                  _buildFilterChips('Experience', _getUniqueValues('experience'), _selectedExperienceLevels),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFilterChips(String title, List<String> options, Set<String> selected) {
-    if (options.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTopHeader() {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
         children: [
+          // Results count
           Text(
-            title,
+            '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
             style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF64748B),
-            ),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF374151)),
           ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: options.map((option) {
-              final isSelected = selected.contains(option);
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    if (isSelected) {
-                      selected.remove(option);
-                    } else {
-                      selected.add(option);
-                    }
-                  });
-                  _filterJobs();
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  child: Text(
-                    option,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected ? Colors.white : const Color(0xFF64748B),
-                    ),
+
+          const Spacer(),
+
+          // Active jobs badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF10B981),
+                    shape: BoxShape.circle,
                   ),
                 ),
-              );
-            }).toList(),
+                const SizedBox(width: 8),
+                Text('${_filteredJobs.length} Active',
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF10B981))),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // Sort dropdown
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFD1D5DB)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.sort, size: 16, color: Color(0xFF64748B)),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: _selectedSortOption,
+                  underline: const SizedBox(),
+                  style: GoogleFonts.inter(
+                      fontSize: 14, color: const Color(0xFF64748B)),
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'newest', child: Text('Newest First')),
+                    DropdownMenuItem(
+                        value: 'oldest', child: Text('Oldest First')),
+                    DropdownMenuItem(
+                        value: 'company', child: Text('Company A→Z')),
+                  ],
+                  onChanged: (val) {
+                    setState(() => _selectedSortOption = val!);
+                    _applyFilters();
+                  },
+                ),
+              ],
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildJobCount() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Text(
-        '${_filteredJobs.length} ${_filteredJobs.length == 1 ? 'job' : 'jobs'} found',
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          color: const Color(0xFF64748B),
-          fontWeight: FontWeight.w500,
-        ),
       ),
     );
   }
 
   Widget _buildJobsList() {
     if (_filteredJobs.isEmpty) {
-      return _buildEmptyState();
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No jobs found',
+              style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try adjusting your filters or search terms',
+              style: GoogleFonts.inter(
+                  fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
       itemCount: _filteredJobs.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        return TweenAnimationBuilder<double>(
-          duration: Duration(milliseconds: 300 + (index * 50)),
-          tween: Tween(begin: 0.0, end: 1.0),
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, (1 - value) * 20),
-              child: Opacity(
-                opacity: value,
-                child: CompactJobCard(jobData: _filteredJobs[index]),
-              ),
-            );
-          },
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: CompactJobCard(jobData: _filteredJobs[index]),
         );
       },
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.search_off,
-            size: 64,
-            color: const Color(0xFF94A3B8),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No jobs found',
+  Widget _buildSearchSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Search Jobs',
             style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF64748B),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF374151))),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            style: GoogleFonts.inter(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Search jobs, companies, skills...',
+              hintStyle: GoogleFonts.inter(
+                  fontSize: 14, color: const Color(0xFF64748B)),
+              prefixIcon: const Icon(Icons.search,
+                  size: 20, color: Color(0xFF64748B)),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                icon: const Icon(Icons.clear,
+                    size: 18, color: Color(0xFF64748B)),
+                onPressed: () {
+                  _searchController.clear();
+                  _applyFilters();
+                },
+              )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Try adjusting your search or filters',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
             style: GoogleFonts.inter(
-              fontSize: 14,
-              color: const Color(0xFF94A3B8),
-            ),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF374151))),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _buildSalaryRangeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Salary Range',
+            style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF374151))),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: _clearAllFilters,
-            child: Text(
-              'Clear all filters',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: const Color(0xFF3B82F6),
-                fontWeight: FontWeight.w500,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('\$${(_salaryRange.start / 1000).round()}k',
+                      style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF374151))),
+                  Text('\$${(_salaryRange.end / 1000).round()}k',
+                      style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF374151))),
+                ],
               ),
-            ),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: const Color(0xFF3B82F6),
+                  inactiveTrackColor: const Color(0xFFE5E7EB),
+                  thumbColor: const Color(0xFF3B82F6),
+                  overlayColor: const Color(0xFF3B82F6).withOpacity(0.2),
+                  trackHeight: 4,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                  rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
+                ),
+                child: RangeSlider(
+                  values: _salaryRange,
+                  min: 0,
+                  max: 200000,
+                  divisions: 40,
+                  onChanged: (r) {
+                    setState(() => _salaryRange = r);
+                    _applyFilters();
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBenefitsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Benefits',
+            style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF374151))),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _getUniqueList('benefits').map((benefit) {
+            final isSelected = _selectedBenefits.contains(benefit);
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  isSelected
+                      ? _selectedBenefits.remove(benefit)
+                      : _selectedBenefits.add(benefit);
+                });
+                _applyFilters();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF3B82F6)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF3B82F6)
+                          : const Color(0xFFD1D5DB)),
+                ),
+                child: Text(
+                    benefit.length > 15
+                        ? '${benefit.substring(0, 15)}...'
+                        : benefit,
+                    style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF374151))),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(String label, String? value, List<String> items,
+      Function(String?) onChanged) {
+    if (items.isEmpty) return const SizedBox();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF374151))),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFD1D5DB)),
+          ),
+          child: DropdownButton<String>(
+            value: value,
+            hint: Text('All ${label}s',
+                style: GoogleFonts.inter(
+                    fontSize: 14, color: const Color(0xFF9CA3AF))),
+            isExpanded: true,
+            underline: const SizedBox(),
+            style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF374151)),
+            items: [
+              DropdownMenuItem<String>(
+                value: null,
+                child: Text('All ${label}s',
+                    style: GoogleFonts.inter(
+                        fontSize: 14, color: const Color(0xFF9CA3AF))),
+              ),
+              ...items.map(
+                      (item) => DropdownMenuItem(value: item, child: Text(item))),
+            ],
+            onChanged: (v) {
+              onChanged(v);
+              _applyFilters();
+            },
+          ),
+        ),
+      ],
     );
   }
 }
-
 /// Compact Job Card with clean, lightweight design
 class CompactJobCard extends StatefulWidget {
   final Map<String, dynamic> jobData;
@@ -691,7 +810,6 @@ class _CompactJobCardState extends State<CompactJobCard>
     return timeago.format(ts.toDate(), locale: 'en_short');
   }
 
-
   void _showDetails() {
     HapticFeedback.lightImpact();
     showModalBottomSheet(
@@ -701,6 +819,7 @@ class _CompactJobCardState extends State<CompactJobCard>
       builder: (_) => JobDetailModal_recruiter(jobData: widget.jobData),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final job = widget.jobData;
@@ -718,7 +837,6 @@ class _CompactJobCardState extends State<CompactJobCard>
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-
       onExit: (_) {
         setState(() => _isHovered = false);
         _controller.reverse();
@@ -844,11 +962,13 @@ class _CompactJobCardState extends State<CompactJobCard>
                         ),
                         if (postedAgo.isNotEmpty)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Color(0xFF003366).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Color(0xFF003366).withOpacity(0.3)),
+                              border: Border.all(
+                                  color: Color(0xFF003366).withOpacity(0.3)),
                             ),
                             child: Text(
                               '$postedAgo ago',
@@ -944,7 +1064,10 @@ class _CompactJobCardState extends State<CompactJobCard>
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [primaryColor, primaryColor.withOpacity(0.8)],
+                              colors: [
+                                primaryColor,
+                                primaryColor.withOpacity(0.8)
+                              ],
                             ),
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
@@ -986,6 +1109,7 @@ class _CompactJobCardState extends State<CompactJobCard>
       ),
     );
   }
+
   Widget _buildDetailSection(String title, IconData icon, Widget content) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -1012,7 +1136,6 @@ class _CompactJobCardState extends State<CompactJobCard>
       ),
     );
   }
-
 }
 
 /// Modern chip widget with enhanced styling

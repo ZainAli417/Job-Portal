@@ -168,7 +168,7 @@ class _JobPostingScreenState extends State<JobPostingScreen>
                               child: Padding(
                                 padding:
                                 const EdgeInsets.symmetric(vertical: 20),
-                                child: JobListVIew(jobs: jobs),
+                                child: JobListView(jobs: jobs),
                               ),
                             );
                           },

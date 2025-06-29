@@ -1,4 +1,7 @@
-// JS_Dashboard.dart - Enhanced Version
+// JS_Dashboard.dart - Enhanced Version with Smooth, Web‑Friendly Scrolling
+import 'dart:async';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +9,23 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../Top_Side_Nav.dart';
 import 'job_seeker_provider.dart';
 import 'Job_seeker_Available_jobs.dart';
+
+/// A ScrollBehavior that enables smooth inertia scrolling on web and desktop
+class SmoothScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    // Allow touch, mouse, stylus...
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+  };
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    // Use Clamping for Android, Bouncing for iOS; web/desktop will get a smooth curve
+    return const BouncingScrollPhysics(parent: ClampingScrollPhysics());
+  }
+}
 
 /// Enhanced JobSeekerDashboard with modern UI/UX and optimized performance
 class JobSeekerDashboard extends StatefulWidget {
@@ -84,13 +104,16 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      activeIndex: 0,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: _buildDashboardContent(context),
+    return ScrollConfiguration(
+      behavior: SmoothScrollBehavior(),
+      child: MainLayout(
+        activeIndex: 0,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: _buildDashboardContent(context),
+          ),
         ),
       ),
     );
@@ -105,74 +128,80 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
           // Left Column - Main Content
           Expanded(
             flex: 3,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _EnhancedProfileCard(),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    height: 600, // Set a fixed height or calculate based on screen
-                    child: Consumer<job_seeker_provider>(
-                      builder: (context, provider, _) {
-                        return StreamBuilder<List<Map<String, dynamic>>>(
-                          stream: provider.publicJobsStream(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
+            child: ScrollConfiguration(
+              behavior: SmoothScrollBehavior(),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWelcomeSection(),
+                    const SizedBox(height: 5),
+                    _buildStatsGrid(),
+                    const SizedBox(height: 5),
+                    SizedBox(
+                      height: 600, // Set a fixed height or calculate based on screen
+                      child: Consumer<job_seeker_provider>(
+                        builder: (context, provider, _) {
+                          return StreamBuilder<List<Map<String, dynamic>>>(
+                            stream: provider.publicJobsStream(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
 
-                            if (snapshot.hasError) {
-                              return Center(
-                                child: Text(
-                                  'Error loading jobs: ${snapshot.error}',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    color: Colors.red.shade700,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final jobs = snapshot.data ?? [];
-
-                            if (jobs.isEmpty) {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.work_outline_rounded,
-                                        size: 80, color: Colors.grey.shade400),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No jobs available right now.\nPlease check back later.',
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        color: Colors.grey.shade600,
-                                      ),
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Text(
+                                    'Error loading jobs: ${snapshot.error}',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      color: Colors.red.shade700,
                                     ),
-                                  ],
+                                  ),
+                                );
+                              }
+
+                              final jobs = snapshot.data ?? [];
+
+                              if (jobs.isEmpty) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.work_outline_rounded,
+                                          size: 80,
+                                          color: Colors.grey.shade400),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No jobs available right now.\nPlease check back later.',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return RepaintBoundary(
+                                child: Padding(
+                                  padding:
+                                  const EdgeInsets.symmetric(vertical: 20),
+                                  child: LiveJobsForSeeker(jobs: jobs),
                                 ),
                               );
-                            }
-                            return RepaintBoundary(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 20),
-                                child: LiveJobsForSeeker(jobs: jobs),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -190,61 +219,6 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
           ),
         ],
       ),
-    );
-  }
-}
-
-class _EnhancedProfileCard extends StatefulWidget {
-  const _EnhancedProfileCard();
-
-  @override
-  State<_EnhancedProfileCard> createState() => _EnhancedProfileCardState();
-}
-
-class _EnhancedProfileCardState extends State<_EnhancedProfileCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildWelcomeSection(),
-                const SizedBox(height: 32),
-                _buildStatsGrid(),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -315,7 +289,6 @@ class _EnhancedProfileCardState extends State<_EnhancedProfileCard>
     );
   }
 }
-
 
 
 
@@ -473,7 +446,6 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
 
 
 
-
 class _EnhancedAIAssistant extends StatefulWidget {
   final TextEditingController messageController;
   final FocusNode messageFocusNode;
@@ -490,20 +462,38 @@ class _EnhancedAIAssistant extends StatefulWidget {
 }
 
 class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _pulseController;
+  late AnimationController _shimmerController;
   late Animation<double> _pulseAnimation;
+  late Animation<double> _shimmerAnimation;
   bool _isAnalyzing = false;
+
+  // Air Force Color Palette
+  static const Color airForceBlue = Color(0xFF1B365D);
+  static const Color skyBlue = Color(0xFF3485E4);
+  static const Color cloudWhite = Color(0xFFF8FAFC);
+  static const Color steelGray = Color(0xFF64748B);
+  static const Color accentGold = Color(0xFFCD9D08);
+  static const Color jetBlack = Color(0xFF0F172A);
+  static const Color successGreen = Color(0xFF07B67C);
 
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+    _shimmerController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
     );
     _pulseController.repeat(reverse: true);
   }
@@ -511,13 +501,12 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
   @override
   void dispose() {
     _pulseController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-
     return Container(
       height: double.infinity,
       decoration: BoxDecoration(
@@ -525,33 +514,42 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFFFAFBFC),
-            Colors.white.withOpacity(0.95),
+            cloudWhite,
+            Colors.white.withOpacity(0.98),
+            cloudWhite.withOpacity(0.95),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.grey.withOpacity(0.1),
-          width: 1,
+          color: skyBlue.withOpacity(0.15),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: airForceBlue.withOpacity(0.08),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
+            spreadRadius: -4,
+          ),
+          BoxShadow(
+            color: skyBlue.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildAIHeader(),
-            const SizedBox(height: 24),
-            _buildMessageInput(primaryColor),
-            const SizedBox(height: 40),
-            _buildProfileAnalysisSection(primaryColor),
+            const SizedBox(height: 28),
+            _buildMessageInput(),
+            const SizedBox(height: 36),
+            _buildQuickActions(),
+            const SizedBox(height: 28),
+            _buildProfileAnalysisSection(),
           ],
         ),
       ),
@@ -565,118 +563,215 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                color: skyBlue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: skyBlue.withOpacity(0.2),
+                  width: 1,
                 ),
-                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.psychology_outlined,
-                color: Colors.white,
-                size: 20,
+                Icons.chat_outlined,
+                color: airForceBlue,
+                size: 24,
               ),
             ),
-            const SizedBox(width: 12),
-            Text(
-              'AI Assistant',
-              style: GoogleFonts.inter(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A1A),
-                letterSpacing: -0.3,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI Career Assistant',
+                    style: GoogleFonts.inter(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: jetBlack,
+                      letterSpacing: -0.5,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: successGreen,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: successGreen.withOpacity(0.3),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Online & Ready',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: successGreen,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Ask me anything about your profile or job search journey.',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF6B7280),
-            letterSpacing: -0.1,
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: skyBlue.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: skyBlue.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.lightbulb_outline_rounded,
+                color: skyBlue,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Ask me about your profile, career goals, or job search strategy.',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: steelGray,
+                    letterSpacing: -0.1,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMessageInput(Color primaryColor) {
+  Widget _buildMessageInput() {
+    final isFocused = widget.isMessageFocused;
+    final hasText = widget.messageController.text.trim().isNotEmpty;
+
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      height: 56,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(28),
+        color: isFocused ? Colors.white : Colors.grey[50],
         border: Border.all(
-          color: widget.isMessageFocused
-              ? primaryColor.withOpacity(0.5)
-              : Colors.grey.withOpacity(0.2),
-          width: widget.isMessageFocused ? 2 : 1,
+          color: isFocused ? skyBlue.withOpacity(0.8) : steelGray.withOpacity(0.15),
+          width: isFocused ? 2.5 : 1,
         ),
-        boxShadow: widget.isMessageFocused
+        boxShadow: isFocused
             ? [
-                BoxShadow(
-                  color: primaryColor.withOpacity(0.1),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-      ),
-      child: TextField(
-        controller: widget.messageController,
-        focusNode: widget.messageFocusNode,
-        style: GoogleFonts.inter(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF1A1A1A),
-        ),
-        decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          hintText: 'Type your message...',
-          filled: false,
-          hintStyle: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF9CA3AF),
+          BoxShadow(
+            color: skyBlue.withOpacity(0.2),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+            spreadRadius: -3,
           ),
-          border: InputBorder.none,
-          suffixIcon: _buildSendButton(primaryColor),
+          BoxShadow(
+            color: skyBlue.withOpacity(0.12),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ]
+            : [
+          BoxShadow(
+            color: jetBlack.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Attachment button
+            _buildAttachmentButton(),
+            const SizedBox(width: 12),
+
+            // Text input field
+            Expanded(
+              child: Container(
+                constraints: const BoxConstraints(
+                  minHeight: 44,
+                  maxHeight: 120,
+                ),
+                child: TextField(
+                  controller: widget.messageController,
+                 // focusNode: widget.messageFocusNode,
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: jetBlack,
+                    height: 1.4,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Type your message ...',
+                    filled: false,
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: steelGray.withOpacity(0.6),
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            // Voice/Send button
+            _buildActionButton(),
+            const SizedBox(width: 8),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSendButton(Color primaryColor) {
-    return Container(
-      margin: const EdgeInsets.all(8),
+  Widget _buildAttachmentButton() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Material(
-        color: primaryColor,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: _handleSendMessage,
+          onTap: _handleAttachment,
           child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.send_rounded,
-              color: Colors.white,
-              size: 18,
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              Icons.attach_file_rounded,
+              color: steelGray.withOpacity(0.7),
+              size: 22,
             ),
           ),
         ),
@@ -684,53 +779,220 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
     );
   }
 
-  Widget _buildProfileAnalysisSection(Color primaryColor) {
+  Widget _buildActionButton() {
+    final hasText = widget.messageController.text.trim().isNotEmpty;
+    final isFocused = widget.isMessageFocused;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.all(6),
+      child: Material(
+        color: hasText
+            ? skyBlue
+            : (isFocused ? skyBlue.withOpacity(0.1) : steelGray.withOpacity(0.15)),
+        borderRadius: BorderRadius.circular(24),
+        elevation: hasText ? 2 : 0,
+        shadowColor: skyBlue.withOpacity(0.3),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: hasText ? _handleSendMessage : _handleVoiceInput,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                hasText ? Icons.send_rounded : Icons.mic_rounded,
+                key: ValueKey(hasText),
+                color: hasText
+                    ? Colors.white
+                    : (isFocused ? skyBlue : steelGray.withOpacity(0.8)),
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+// Additional helper methods to implement
+  void _handleAttachment() {
+    // Implement attachment functionality
+    // Show bottom sheet with options: Camera, Gallery, Files, etc.
+  }
+
+  void _handleVoiceInput() {
+    // Implement voice input functionality
+    // Start voice recording
+  }
+
+  void _handleSendMessage() {
+    // Your existing send message implementation
+  }
+  Widget _buildQuickActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: jetBlack,
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: _buildQuickActionCard(
+              icon: Icons.work_outline_rounded,
+              title: 'Job Match',
+              subtitle: 'Find roles',
+              color: successGreen,
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _buildQuickActionCard(
+              icon: Icons.trending_up_rounded,
+              title: 'Skill Gap',
+              subtitle: 'Analyze',
+              color: accentGold,
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _buildQuickActionCard(
+              icon: Icons.article_outlined,
+              title: 'Resume',
+              subtitle: 'Optimize',
+              color: skyBlue,
+            )),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          // TODO: Implement quick action
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: jetBlack,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: steelGray,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileAnalysisSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [successGreen, successGreen.withOpacity(0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: successGreen.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Icon(
-                Icons.analytics_outlined,
-                color: Color(0xFF10B981),
-                size: 20,
+                Icons.analytics_rounded,
+                color: Colors.white,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 12),
-            Text(
-              'Profile Analysis',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A1A),
-                letterSpacing: -0.3,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Profile Analysis',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: jetBlack,
+                      letterSpacing: -0.3,
+                      height: 1.2,
+                    ),
+                  ),
+                  Text(
+                    'AI-powered insights & recommendations',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: steelGray,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Text(
-          'Get AI-powered insights to optimize your profile for better job matches.',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF6B7280),
-            letterSpacing: -0.1,
-          ),
-        ),
-        const SizedBox(height: 24),
-        _buildAnalyzeButton(primaryColor),
+        const SizedBox(height: 20),
+        _buildAnalyzeButton(),
       ],
     );
   }
 
-  Widget _buildAnalyzeButton(Color primaryColor) {
+  Widget _buildAnalyzeButton() {
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
@@ -738,52 +1000,22 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
           scale: _isAnalyzing ? _pulseAnimation.value : 1.0,
           child: SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 56,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _isAnalyzing ? primaryColor.withOpacity(0.8) : primaryColor,
-                elevation: 0,
-                shadowColor: Colors.transparent,
+                backgroundColor: _isAnalyzing
+                    ? steelGray.withOpacity(0.7)
+                    : airForceBlue,
+                elevation: _isAnalyzing ? 0 : 8,
+                shadowColor: airForceBlue.withOpacity(0.3),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               onPressed: _isAnalyzing ? null : _handleAnalyzeProfile,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_isAnalyzing) ...[
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ] else ...[
-                    const Icon(
-                      Icons.auto_awesome_outlined,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    _isAnalyzing ? 'Analyzing...' : 'Analyze Profile',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: -0.1,
-                    ),
-                  ),
-                ],
-              ),
+              child: _isAnalyzing
+                  ? _buildAnalyzingContent()
+                  : _buildAnalyzeContent(),
             ),
           ),
         );
@@ -791,26 +1023,86 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
     );
   }
 
-  void _handleSendMessage() {
-    if (widget.messageController.text.trim().isNotEmpty) {
-      // TODO: Implement send message logic
-      widget.messageController.clear();
-      widget.messageFocusNode.unfocus();
-    }
+  Widget _buildAnalyzeContent() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.auto_awesome_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          'Analyze My Profile',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Icon(
+          Icons.arrow_forward_rounded,
+          color: Colors.white,
+          size: 18,
+        ),
+      ],
+    );
   }
+
+  Widget _buildAnalyzingContent() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Colors.white.withOpacity(0.9),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Text(
+          'Analyzing Profile...',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.9),
+            letterSpacing: -0.1,
+          ),
+        ),
+      ],
+    );
+  }
+
 
   void _handleAnalyzeProfile() async {
     setState(() {
       _isAnalyzing = true;
     });
 
+    _shimmerController.repeat();
+
     // Simulate analysis delay
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 4));
 
     if (mounted) {
       setState(() {
         _isAnalyzing = false;
       });
+      _shimmerController.stop();
       // TODO: Navigate to profile analysis results
     }
   }
