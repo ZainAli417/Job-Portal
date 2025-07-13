@@ -58,27 +58,81 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = Provider.of<LoginProvider>(context, listen: false);
-    // Replace with your actual login method. For example:
-    // final error = await provider.login(email: _email.text.trim(), password: _password.text, role: widget.role);
-    final error = await provider.login(
-      email: _email.text.trim(),
-      password: _password.text,
-      expectedRole: 'Job_Seeker',
-    );
 
+    // Clear any previous errors
+    provider.clearError();
 
-    if (error != null) {
-      _showFlushbar(context, error, true);
+    try {
+      // Call the improved login method that returns bool
+      final bool success = await provider.login(
+        email: _email.text.trim(),
+        password: _password.text,
+        expectedRole: 'Job_Seeker',
+      );
+
+      if (!mounted) return; // Check if widget is still mounted
+
+      if (success) {
+        // Update last login timestamp
+        await provider.updateLastLogin();
+
+        _showFlushbar(context, "Login Successful!", false);
+
+        // Navigate to dashboard after a brief delay
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            context.pushReplacement('/dashboard');
+          }
+        });
+      } else {
+        // Show error message from provider
+        final errorMessage = provider.errorMessage ?? 'Login failed. Please try again.';
+        _showFlushbar(context, errorMessage, true);
+      }
+    } catch (e) {
+      // Handle any unexpected errors
+      if (mounted) {
+        _showFlushbar(context, 'An unexpected error occurred. Please try again.', true);
+      }
+      debugPrint('Login error: $e');
     }
-    else {
-      _showFlushbar(context, "Login Successful!", false);
-      Future.delayed(const Duration(seconds: 1), () {
-
-        context.pushReplacement('/dashboard');
-      });
-    }
-
   }
+
+// Alternative method if you want to handle Google Sign-In as well
+  Future<void> _onGoogleLogin() async {
+    final provider = Provider.of<LoginProvider>(context, listen: false);
+
+    // Clear any previous errors
+    provider.clearError();
+
+    try {
+      final bool success = await provider.signInWithGoogle();
+
+      if (!mounted) return; // Check if widget is still mounted
+
+      if (success) {
+        _showFlushbar(context, "Google Sign-In Successful!", false);
+
+        // Navigate to dashboard after a brief delay
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            context.pushReplacement('/dashboard');
+          }
+        });
+      } else {
+        // Show error message from provider
+        final errorMessage = provider.errorMessage ?? 'Google sign-in failed. Please try again.';
+        _showFlushbar(context, errorMessage, true);
+      }
+    } catch (e) {
+      // Handle any unexpected errors
+      if (mounted) {
+        _showFlushbar(context, 'An unexpected error occurred during Google sign-in.', true);
+      }
+      debugPrint('Google sign-in error: $e');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +374,99 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen> {
 
                                       },
                                     ),
+
+
+                                    const SizedBox(height: 32),
+
+// ─── Divider + Google Button ───
+                                    Consumer<LoginProvider>(
+                                      builder: (_, provider, __) {
+                                        return Column(
+                                          children: [
+                                            // Divider with text
+                                            Row(
+                                              children: [
+                                                const Expanded(child: Divider(thickness: 1)),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                  child: Text(
+                                                    'Or continue with',
+                                                    style: GoogleFonts.montserrat(
+                                                      fontSize: 12,
+                                                      color: Colors.black54,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const Expanded(child: Divider(thickness: 1)),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 16),
+
+                                            // Google Sign‑in Button
+                                            Align(
+                                              alignment: Alignment.center,
+                                              child: GestureDetector(
+                                                onTap: provider.isLoading ? () {} : _onGoogleLogin, // keep enabled to preserve color
+
+                                        child: Container(
+                                                  height: 50,
+                                                  width: 300,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(25),
+                                                    border: Border.all(color: Colors.grey.shade300),
+                                                    color: Colors.white,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        blurRadius: 4,
+                                                        color: Colors.black12,
+                                                        offset: Offset(0, 2),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      // Replace with your asset or network image
+                                                      Image.asset(
+                                                        'images/google.png',
+                                                        height: 24,
+                                                        width: 24,
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      Text(
+                                                        provider.isLoading
+                                                            ? 'Please wait...'
+                                                            : 'Continue with Google',
+                                                        style: GoogleFonts.montserrat(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: Colors.black87,
+                                                        ),
+                                                      ),
+                                                      if (provider.isLoading)
+                                                        const Padding(
+                                                          padding: EdgeInsets.only(left: 12),
+                                                          child: SizedBox(
+                                                            height: 20,
+                                                            width: 20,
+                                                            child: CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+
                                     const SizedBox(height: 16),
+
 
                                     // ─── Forgot & "New here? Create Account" Row ───
                                     Row(

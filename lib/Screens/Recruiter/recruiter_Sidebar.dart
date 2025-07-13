@@ -112,6 +112,14 @@ class _Recruiter_MainLayoutState extends State<Recruiter_MainLayout> {
               if (widget.activeIndex != 0) context.go('/recruiter-dashboard');
             },
           ),
+  _buildNavItem(
+            icon: Icons.post_add_rounded,
+            label: 'Post A Job',
+            isActive: widget.activeIndex == 1,
+            onTap: () {
+              if (widget.activeIndex != 1) context.go('/job-posting');
+            },
+          ),
 
 
           const SizedBox(width: 16),

@@ -1,15 +1,15 @@
-// TopNavProvider.dart
+// JS_TopNavProvider.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 /// Fetches the current user’s full name from Firestore, then exposes
 /// the first two letters as `initials`.
-class TopNavProvider extends ChangeNotifier {
+class JS_TopNavProvider extends ChangeNotifier {
   String _initials = '';
   String get initials => _initials;
 
-  TopNavProvider() {
+  JS_TopNavProvider() {
     _fetchInitials();
   }
 

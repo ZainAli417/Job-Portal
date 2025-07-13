@@ -79,13 +79,13 @@ class _SplashScreenState extends State<SplashScreen> {
           Positioned.fill(
             child: SvgPicture.asset(
               'images/bg.svg',
-              fit: BoxFit.fitWidth,
+              fit: BoxFit.contain,
             ),
           ),
 
           // 2. Dark overlay
           Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.45)),
+            child: Container(color: Colors.black87.withOpacity(0.55)),
           ),
 
           // 3. Content: Header + Buttons
@@ -94,11 +94,16 @@ class _SplashScreenState extends State<SplashScreen> {
               const HeaderNav(),
               Expanded(
                 child: Center(
+
                   child: ConstrainedBox(
+
                     constraints: const BoxConstraints(maxWidth: 800),
                     child: Column(
+
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const SizedBox(height: 170),
+
                         Text(
                           'Find your next opportunity',
                           textAlign: TextAlign.center,
@@ -108,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 48),
+                        const SizedBox(height: 80),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -151,7 +156,7 @@ class _SplashScreenState extends State<SplashScreen> {
                               ),
                             ),
 
-                            const SizedBox(width: 32),
+                            const SizedBox(width: 100),
 
                             // ── Recruiter Button ──
                             MouseRegion(

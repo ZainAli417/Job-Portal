@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:job_portal/Screens/Recruiter/sidebar_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'Top_Nav_Provider.dart';
+
 class MainLayout extends StatefulWidget {
   final Widget child;
   final int activeIndex;
@@ -45,7 +47,7 @@ class MainLayoutState extends State<MainLayout> {
 
   Widget _buildScaffold(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final initials = context.watch<R_TopNavProvider>().initials;
+    final initials = context.watch<JS_TopNavProvider>().initials;
 
     return Scaffold(
       backgroundColor: Color(0xFFFAFAFA),
@@ -119,7 +121,7 @@ class MainLayoutState extends State<MainLayout> {
 
           _buildNavItem(
             icon: Icons.person_outline,
-            label: 'Create Profile',
+            label: 'Profile',
             isActive: widget.activeIndex == 1,
             onTap: () {
               if (widget.activeIndex != 1) {
@@ -131,8 +133,8 @@ class MainLayoutState extends State<MainLayout> {
 
           _buildNavItem(
 
-            icon: Icons.bookmark_border,
-            label: 'Saved Jobs',
+            icon: Icons.work_history_outlined,
+            label: 'Job Application',
             isActive: widget.activeIndex == 2,
             onTap: () {
               if (widget.activeIndex != 2) {
@@ -272,24 +274,6 @@ class MainLayoutState extends State<MainLayout> {
     );
   }
 
-  Widget _buildPrimaryActionButton({
-    required String text,
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(text),
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: Theme.of(context).primaryColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
-      ),
-    );
-  }
 
   Widget _buildIconButton({
     required String tooltip,
@@ -372,7 +356,7 @@ class MainLayoutState extends State<MainLayout> {
           radius: 18,
           backgroundColor: primaryColor,
           child: Text(
-            initials.isNotEmpty ? initials : 'ZA',
+            initials.isNotEmpty ? initials : 'JS',
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,

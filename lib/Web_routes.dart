@@ -10,6 +10,7 @@ import 'Screens/Job_Seeker/JS_Profile.dart';
 import 'Screens/Job_Seeker/Login.dart';
 import 'Screens/Job_Seeker/Sign Up.dart';
 import 'Screens/Job_Seeker/JS_Dashboard.dart';
+import 'Screens/Job_Seeker/List_Applied_jobs_application.dart';
 import 'Screens/Recruiter/Login_Recruiter.dart';
 import 'Screens/Recruiter/Sign Up_Recruiter.dart';
 import 'Constant/Splash.dart';
@@ -156,6 +157,13 @@ final GoRouter router = GoRouter(
     path: '/profile',
     pageBuilder: (context, state) => _buildPageWithAnimation(
       child: const ProfileScreen(),
+      context: context,
+      state: state,
+    ),
+  ), GoRoute(
+    path: '/saved',
+    pageBuilder: (context, state) => _buildPageWithAnimation(
+      child:  ListAppliedJobsScreen(),
       context: context,
       state: state,
     ),
