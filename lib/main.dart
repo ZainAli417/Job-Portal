@@ -11,6 +11,7 @@ import 'Screens/Job_Seeker/Signup_Provider.dart';
 import 'Screens/Job_Seeker/job_seeker_provider.dart';
 import 'Screens/Job_Seeker/jobs_application_provider.dart';
 import 'Screens/Job_Seeker/login_provider.dart';
+import 'Screens/Recruiter/LIst_of_Applicants_provider.dart';
 import 'Screens/Recruiter/Signup_Provider_Recruiter.dart';
 import 'Screens/Recruiter/Recruiter_provider.dart';
 import 'Screens/Recruiter/login_provider_Recruiter.dart';
@@ -57,6 +58,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => job_seeker_provider()),
         ChangeNotifierProvider(create: (_) => JobApplicationsProvider()),
         ChangeNotifierProvider(create: (_) => ListAppliedJobsProvider()),
+        ChangeNotifierProvider(create: (_) => ApplicantsProvider()),
 
       ],
       child: const JobPortalApp(),

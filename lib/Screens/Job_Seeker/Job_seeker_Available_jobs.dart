@@ -4,10 +4,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'Job_Detail_Dialog.dart';
+import 'jobs_application_provider.dart';
 
 class LiveJobsForSeeker extends StatefulWidget {
   final List<Map<String, dynamic>> jobs;
@@ -56,6 +59,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     _fadeController.forward();
     _searchController.addListener(_onSearchChanged);
     _initializeSalaryRange();
+    Future.microtask(() {
+      context.read<JobApplicationsProvider>().loadAppliedJobs();
+    });
   }
 
   void _initializeSalaryRange() {
@@ -85,8 +91,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
         // Search filter
         if (query.isNotEmpty) {
           final searchText =
-          '${job['title']} ${job['company']} ${job['description']} ${(job['skills'] as List?)?.join(' ') ?? ''}'
-              .toLowerCase();
+              '${job['title']} ${job['company']} ${job['description']} ${(job['skills'] as List?)?.join(' ') ?? ''}'
+                  .toLowerCase();
           if (!searchText.contains(query)) return false;
         }
 
@@ -167,7 +173,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       _searchController.clear();
       _selectedCompany = _selectedDepartment = _selectedLocation =
           _selectedJobType = _selectedExperience =
-          _selectedSalaryType = _selectedRank = _selectedClearance = null;
+              _selectedSalaryType = _selectedRank = _selectedClearance = null;
       _selectedBenefits.clear();
       _salaryRange = const RangeValues(0, 200000);
       _selectedSortOption = 'newest';
@@ -305,7 +311,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               const Spacer(),
               if (_activeFiltersCount > 0) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3B82F6),
                     borderRadius: BorderRadius.circular(12),
@@ -362,19 +369,19 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       'Company',
                       _selectedCompany,
                       _getUnique('company'),
-                          (v) => setState(() => _selectedCompany = v)),
+                      (v) => setState(() => _selectedCompany = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Location',
                       _selectedLocation,
                       _getUnique('location'),
-                          (v) => setState(() => _selectedLocation = v)),
+                      (v) => setState(() => _selectedLocation = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Job Type',
                       _selectedJobType,
                       _getUnique('nature'),
-                          (v) => setState(() => _selectedJobType = v)),
+                      (v) => setState(() => _selectedJobType = v)),
                 ]),
 
                 const SizedBox(height: 24),
@@ -385,19 +392,19 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       'Department',
                       _selectedDepartment,
                       _getUnique('department'),
-                          (v) => setState(() => _selectedDepartment = v)),
+                      (v) => setState(() => _selectedDepartment = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Experience Level',
                       _selectedExperience,
                       _getUnique('experience'),
-                          (v) => setState(() => _selectedExperience = v)),
+                      (v) => setState(() => _selectedExperience = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Salary Type',
                       _selectedSalaryType,
                       _getUnique('salaryType'),
-                          (v) => setState(() => _selectedSalaryType = v)),
+                      (v) => setState(() => _selectedSalaryType = v)),
                 ]),
 
                 const SizedBox(height: 24),
@@ -446,8 +453,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             decoration: BoxDecoration(
               color: const Color(0xFF10B981).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: const Color(0xFF10B981).withOpacity(0.2)),
+              border:
+                  Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -529,8 +536,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             const SizedBox(height: 8),
             Text(
               'Try adjusting your filters or search terms',
-              style: GoogleFonts.inter(
-                  fontSize: 14, color: Colors.grey[500]),
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[500]),
             ),
           ],
         ),
@@ -573,21 +579,21 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               hintText: 'Search jobs, companies, skills...',
               hintStyle: GoogleFonts.inter(
                   fontSize: 14, color: const Color(0xFF64748B)),
-              prefixIcon: const Icon(Icons.search,
-                  size: 20, color: Color(0xFF64748B)),
+              prefixIcon:
+                  const Icon(Icons.search, size: 20, color: Color(0xFF64748B)),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                icon: const Icon(Icons.clear,
-                    size: 18, color: Color(0xFF64748B)),
-                onPressed: () {
-                  _searchController.clear();
-                  _applyFilters();
-                },
-              )
+                      icon: const Icon(Icons.clear,
+                          size: 18, color: Color(0xFF64748B)),
+                      onPressed: () {
+                        _searchController.clear();
+                        _applyFilters();
+                      },
+                    )
                   : null,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
         ),
@@ -651,9 +657,12 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   thumbColor: const Color(0xFF3B82F6),
                   overlayColor: const Color(0xFF3B82F6).withOpacity(0.2),
                   trackHeight: 4,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-                  rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
+                  thumbShape:
+                      const RoundSliderThumbShape(enabledThumbRadius: 8),
+                  overlayShape:
+                      const RoundSliderOverlayShape(overlayRadius: 16),
+                  rangeThumbShape:
+                      const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
                 ),
                 child: RangeSlider(
                   values: _salaryRange,
@@ -698,11 +707,10 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 _applyFilters();
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF3B82F6)
-                      : Colors.white,
+                  color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                       color: isSelected
@@ -755,7 +763,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                     fontSize: 14, color: const Color(0xFF9CA3AF))),
             isExpanded: true,
             underline: const SizedBox(),
-            style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF374151)),
+            style:
+                GoogleFonts.inter(fontSize: 14, color: const Color(0xFF374151)),
             items: [
               DropdownMenuItem<String>(
                 value: null,
@@ -764,7 +773,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                         fontSize: 14, color: const Color(0xFF9CA3AF))),
               ),
               ...items.map(
-                      (item) => DropdownMenuItem(value: item, child: Text(item))),
+                  (item) => DropdownMenuItem(value: item, child: Text(item))),
             ],
             onChanged: (v) {
               onChanged(v);
@@ -776,6 +785,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     );
   }
 }
+
 /// Compact Job Card with clean, lightweight design
 class CompactJobCard extends StatefulWidget {
   final Map<String, dynamic> jobData;
@@ -928,7 +938,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             children: [
                               Text(
                                 title,
-                                style: GoogleFonts.montserrat(
+                                style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.black87,
@@ -940,7 +950,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               const SizedBox(height: 2),
                               Text(
                                 '$company • $department',
-                                style: GoogleFonts.montserrat(
+                                style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFF64748B),
@@ -950,7 +960,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               ),
                               Text(
                                 location,
-                                style: GoogleFonts.montserrat(
+                                style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: Color(0xFF64748B),
                                 ),
@@ -972,7 +982,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             ),
                             child: Text(
                               '$postedAgo ago',
-                              style: GoogleFonts.montserrat(
+                              style: GoogleFonts.poppins(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF003366),
@@ -993,7 +1003,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             Icons.description,
                             Text(
                               description,
-                              style: GoogleFonts.montserrat(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.black87,
                                 height: 1.5,
@@ -1009,7 +1019,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             Icons.checklist,
                             Text(
                               responsibilities,
-                              style: GoogleFonts.montserrat(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.black87,
                                 height: 1.5,
@@ -1023,7 +1033,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                         if (skills.isNotEmpty) ...[
                           Text(
                             'Skills Required',
-                            style: GoogleFonts.montserrat(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
@@ -1048,7 +1058,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     '+${skills.length - 4} more',
-                                    style: GoogleFonts.montserrat(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       color: Colors.grey.shade600,
                                       fontStyle: FontStyle.italic,
@@ -1059,44 +1069,137 @@ class _CompactJobCardState extends State<CompactJobCard>
                           ),
                         ],
                         const SizedBox(height: 15),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                primaryColor,
-                                primaryColor.withOpacity(0.8)
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: primaryColor.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'View Details',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                        Consumer<JobApplicationsProvider>(
+                          builder: (ctx, appProv, _) {
+                            // 1) Show SnackBar on any new error...
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (appProv.errorMessage != null) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(content: Text(appProv.errorMessage!)),
+                                );
+                                appProv.clearError();
+                              }
+                            });
+
+                            // 2) Now build your two-button Row exactly as before:
+                            return Row(
+                              children: [
+                                // 1. View Details button
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: _showDetails,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            primaryColor,
+                                            primaryColor.withOpacity(0.8),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: primaryColor.withOpacity(0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'View Details',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Icon(
+                                            Icons.arrow_forward_ios,
+                                            size: 12,
+                                            color: Colors.white,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
+
+                                const SizedBox(width: 12),
+
+                                // 2. Apply Now button (with loading, disabled, gradient + error handling)
+                                Expanded(
+                                  child: () {
+                                    final jobId   = widget.jobData['id'] as String;
+                                    final already = appProv.hasApplied(jobId);
+                                    final loading = appProv.isApplying;
+
+                                    return GestureDetector(
+                                      onTap: (already || loading) ? null : () => _applyForJob(),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: already
+                                                ? [Colors.grey[300]!, Colors.grey[400]!]
+                                                : [
+                                              primaryColor,
+                                              primaryColor.withOpacity(0.8),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (already ? Colors.grey : primaryColor)
+                                                  .withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: loading
+                                            ? const Center(
+                                          child: SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                                            ),
+                                          ),
+                                        )
+                                            : Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              already ? Icons.hourglass_top : Icons.send,
+                                              size: 20,
+                                              color: already ? Colors.grey[700] : Colors.white,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              already
+                                                  ? 'Application Under Consideration'
+                                                  : 'Apply Now',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: already ? Colors.grey[700] : Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }(),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -1105,6 +1208,96 @@ class _CompactJobCardState extends State<CompactJobCard>
               ),
             ),
           ),
+        ),
+      ),
+    );
+
+  }
+
+  Future<void> _applyForJob() async {
+    final provider = context.read<JobApplicationsProvider>();
+
+    // trigger light haptic
+    HapticFeedback.mediumImpact();
+
+    // call & wait
+    await provider.applyForJob(widget.jobData['id'] as String);
+
+    // if there was an error, you could show it:
+    if (provider.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.errorMessage!),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    // success → show dialog
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Your success image
+            SvgPicture.asset(
+              'images/applied.svg',
+              width: 200,
+              height: 200,
+            ),
+            const SizedBox(height: 16),
+
+            // Title
+            Text(
+              'Application Submitted!',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+
+            // Subtitle
+            Text(
+              'Your Profile Have been shared with recruiter.\n Only shortlisted candidate will be notify for an interview session.',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[700],
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+
+            // OK button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF1B365D),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(
+                  'OK',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1122,7 +1315,7 @@ class _CompactJobCardState extends State<CompactJobCard>
               const SizedBox(width: 6),
               Text(
                 title,
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,

@@ -30,6 +30,8 @@ dependencies:
   cached_network_image: ^3.4.1
   printing: ^5.10.0
   google_sign_in: ^6.3.0
+  fl_chart: ^1.0.0
+  flutter_date_pickers: ^0.4.3
 
 
 

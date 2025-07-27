@@ -42,6 +42,7 @@ class _JobDetailModalState extends State<JobDetailModal>
       curve: Curves.easeOutCubic,
     ));
     _animationController.forward();
+
   }
 
   @override
@@ -94,8 +95,6 @@ class _JobDetailModalState extends State<JobDetailModal>
                       const SizedBox(height: 20),
                       _buildWorkModesSection(),
                       const SizedBox(height: 20),
-                      _buildApplicationSection(),
-                      const SizedBox(height: 32),
                     ],
                   ),
                 ),
@@ -534,120 +533,6 @@ class _JobDetailModalState extends State<JobDetailModal>
 
 // Inside your Job Details widget:
 
-  Widget _buildApplicationSection() {
-    return Consumer<JobApplicationsProvider>(
-      builder: (ctx, appProv, _) {
-        final jobId = widget.jobData['id'] as String;
-        final already = appProv.hasApplied(jobId);
-        final isLoading = appProv.isApplying;
-
-        final bool showError = appProv.errorMessage != null && !already;
-
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: airForceBlue.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Application Details', Icons.send_outlined),
-              const SizedBox(height: 16),
-              _buildContactItem(
-                'Contact Email',
-                widget.jobData['contactEmail'] ?? 'N/A',
-                Icons.email_outlined,
-              ),
-              if (widget.jobData['instructions'] != null &&
-                  widget.jobData['instructions'].toString().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(
-                  'Application Instructions:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: jetBlack,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.jobData['instructions'],
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: steelGray,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: (already || isLoading) ? null : _applyForJob,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: already
-                        ? Colors.grey[300]
-                        : isLoading
-                        ? airForceBlue.withOpacity(0.6)
-                        : airForceBlue,
-                    foregroundColor: already ? Colors.grey[700] : Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: isLoading
-                      ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                    ),
-                  )
-                      : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        already ? Icons.hourglass_top : Icons.send,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        already
-                            ? 'Application Under Consideration'
-                            : 'Apply Now',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (showError) ...[
-                const SizedBox(height: 8),
-                Text(
-                  appProv.errorMessage!,
-                  style: const TextStyle(color: Colors.redAccent),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
 
 
 
@@ -865,94 +750,6 @@ class _JobDetailModalState extends State<JobDetailModal>
   }
 
 
-  Future<void> _applyForJob() async {
-    final provider = context.read<JobApplicationsProvider>();
-
-    // trigger light haptic
-    HapticFeedback.mediumImpact();
-
-    // call & wait
-    await provider.applyForJob(widget.jobData['id'] as String);
-
-    // if there was an error, you could show it:
-    if (provider.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.errorMessage!),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    // success → show dialog
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Your success image
-            SvgPicture.asset(
-              'images/applied.svg',
-              width: 80,
-              height: 80,
-            ),
-            const SizedBox(height: 16),
-
-            // Title
-            Text(
-              'Application Submitted!',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-
-            // Subtitle
-            Text(
-              'Your Profile Have been shared with recruiter. Only shortlisted candidate will be notify for an interview session.',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.grey[700],
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-
-            // OK button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: airForceBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(
-                  'OK',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
   void _copyToClipboard(String text) {

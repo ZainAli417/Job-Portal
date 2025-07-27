@@ -188,12 +188,16 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
                                   ),
                                 );
                               }
-                              return RepaintBoundary(
+                              return Expanded
+                                (
+                                child:
+                                    RepaintBoundary(
                                 child: Padding(
                                   padding:
                                   const EdgeInsets.symmetric(vertical: 20),
                                   child: LiveJobsForSeeker(jobs: jobs),
                                 ),
+                                    ),
                               );
                             },
                           );

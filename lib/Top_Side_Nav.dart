@@ -96,7 +96,7 @@ class MainLayoutState extends State<MainLayout> {
           // Logo
           Text(
             'LOGO_HERE',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: primaryColor,
@@ -243,8 +243,8 @@ class MainLayoutState extends State<MainLayout> {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          curve: Curves.easeInOut,
-          height: 35,
+          curve: Curves.easeOutSine,
+          height: 40,
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: isActive ? primaryColor.withOpacity(0.1) : Colors.transparent,
@@ -261,8 +261,8 @@ class MainLayoutState extends State<MainLayout> {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: isActive ? primaryColor : unselectedColor,
                 ),
@@ -326,7 +326,7 @@ class MainLayoutState extends State<MainLayout> {
                     constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                     child: Text(
                       badge.toString(),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -357,7 +357,7 @@ class MainLayoutState extends State<MainLayout> {
           backgroundColor: primaryColor,
           child: Text(
             initials.isNotEmpty ? initials : 'JS',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -381,7 +381,7 @@ class MainLayoutState extends State<MainLayout> {
                 child: Text(
                   'Logout',
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.red,
@@ -407,7 +407,7 @@ class MainLayoutState extends State<MainLayout> {
             child: Text(
               title,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isDestructive ? Colors.red.shade500 : _textPrimary,
@@ -427,8 +427,8 @@ class MainLayoutState extends State<MainLayout> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Confirm Logout', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-        content: Text('Are you sure you want to logout?', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+        title: Text('Confirm Logout', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        content: Text('Are you sure you want to logout?', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
