@@ -61,452 +61,517 @@ class _PostJobDialogState extends State<PostJobDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<JobPostingProvider>(context);
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: white,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900, maxHeight: 800),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-              decoration: BoxDecoration(
-                color: white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
+    return Consumer<JobPostingProvider>( // Wrap with Consumer
+        builder: (context, provider, child) {
+          return Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+                horizontal: 8, vertical: 24),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            backgroundColor: white,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900, maxHeight: 800),
+              child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                     decoration: BoxDecoration(
-                      color: primaryLight,
-                      borderRadius: BorderRadius.circular(12),
+                      color: white,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: Icon(Icons.flight_rounded, color: primary, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          'Create Air Force Job Posting',
-                          style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: primaryLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                              Icons.flight_rounded, color: primary, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Create Air Force Job Posting',
+                                style: GoogleFonts.inter(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                'Post aviation and support positions for Air Force personnel',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Text(
-                          'Post aviation and support positions for Air Force personnel',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close_rounded),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.grey.shade100,
+                            foregroundColor: Colors.grey.shade600,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.shade100,
-                      foregroundColor: Colors.grey.shade600,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionCard(
+                              title: 'Unit & Position Information',
+                              icon: Icons.military_tech_rounded,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildLogoUploader(provider),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          _buildTextField(
+                                            label: 'Position Title',
+                                            initialValue: provider.tempTitle,
+                                            onChanged: provider.updateTempTitle,
+                                            validator: (v) =>
+                                            v!.trim().isEmpty
+                                                ? 'Required'
+                                                : null,
+                                            icon: Icons.work_outline,
+                                            hintText: 'e.g., Aircraft Maintenance Technician, Pilot, Air Traffic Controller',
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: _buildTextField(
+                                                  label: 'Air Force Unit/Base',
+                                                  initialValue: provider
+                                                      .tempCompany ?? '',
+                                                  onChanged: provider
+                                                      .updateTempCompany,
+                                                  validator: (v) =>
+                                                  v!.trim().isEmpty
+                                                      ? 'Required'
+                                                      : null,
+                                                  icon: Icons
+                                                      .location_city_rounded,
+                                                  hintText: 'e.g., 15th Wing, Edwards AFB',
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: _buildDropdownField(
+                                                  label: 'Department/Squadron',
+                                                  value: provider
+                                                      .tempDepartment ??
+                                                      departmentOptions.first,
+                                                  items: departmentOptions,
+                                                  onChanged: (val) =>
+                                                      provider
+                                                          .updateTempDepartment(
+                                                          val!),
+                                                  icon: Icons
+                                                      .group_work_outlined,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildSectionCard(
+                              title: 'Position Description & Requirements',
+                              icon: Icons.description_outlined,
+                              children: [
+                                _buildTextField(
+                                  label: 'Position Description',
+                                  initialValue: provider.tempDescription,
+                                  onChanged: provider.updateTempDescription,
+                                  validator: (v) =>
+                                  v!.trim().isEmpty ? 'Required' : null,
+                                  maxLines: 4,
+                                  icon: Icons.edit_note_rounded,
+                                  hintText: 'Describe the role, mission support requirements, and operational responsibilities',
+                                ),
+                                const SizedBox(height: 12),
+                                _buildTextField(
+                                  label: 'Primary Duties & Responsibilities',
+                                  initialValue: provider.tempResponsibilities ??
+                                      '',
+                                  onChanged: provider
+                                      .updateTempResponsibilities,
+                                  validator: (v) =>
+                                  v!.trim().isEmpty ? 'Required' : null,
+                                  maxLines: 3,
+                                  icon: Icons.checklist_rounded,
+                                  hintText: 'List key operational duties, maintenance tasks, or administrative responsibilities',
+                                ),
+                                const SizedBox(height: 12),
+                                _buildTextField(
+                                  label: 'Required Qualifications & Training',
+                                  initialValue: provider.tempQualifications ??
+                                      '',
+                                  onChanged: provider.updateTempQualifications,
+                                  validator: (v) =>
+                                  v!.trim().isEmpty ? 'Required' : null,
+                                  maxLines: 3,
+                                  icon: Icons.school_outlined,
+                                  hintText: 'Military training, certifications, technical schools, or civilian education required',
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildSectionCard(
+                              title: 'Compensation & Pay Information',
+                              icon: Icons.attach_money_rounded,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDropdownField(
+                                        label: 'Compensation Type',
+                                        value: provider.tempSalaryType ??
+                                            salaryTypeOptions.first,
+                                        items: salaryTypeOptions,
+                                        onChanged: (val) =>
+                                            provider.updateTempSalaryType(val!),
+                                        icon: Icons.payments_outlined,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildTextField(
+                                        label: 'Salary Range',
+                                        initialValue: provider.tempSalary ?? '',
+                                        onChanged: provider.updateTempSalary,
+                                        validator: (v) =>
+                                        v!.trim().isEmpty ? 'Required' : null,
+                                        icon: Icons.monetization_on_outlined,
+                                        hintText: 'e.g., \$45,000 - \$65,000 or E-5 Base Pay + BAH',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                _buildTextField(
+                                  label: 'Additional Pay Details',
+                                  initialValue: provider.tempPayDetails ?? '',
+                                  onChanged: provider.updateTempPayDetails,
+                                  maxLines: 2,
+                                  icon: Icons.info_outline_rounded,
+                                  hintText: 'Special pay, hazard pay, flight pay, bonuses, or allowances included',
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildSectionCard(
+                              title: 'Rank & Security Requirements',
+                              icon: Icons.security_rounded,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDropdownField(
+                                        label: 'Minimum Rank Required',
+                                        value: provider.tempNature ??
+                                            rankRequirements.first,
+                                        items: rankRequirements,
+                                        onChanged: (val) =>
+                                            provider.updateTempNature(val!),
+                                        icon: Icons.stars_rounded,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildDropdownField(
+                                        label: 'Security Clearance',
+                                        value: provider.tempExperience ??
+                                            securityClearanceOptions.first,
+                                        items: securityClearanceOptions,
+                                        onChanged: (val) =>
+                                            provider.updateTempExperience(val!),
+                                        icon: Icons.verified_user_rounded,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTextField(
+                                        label: 'Years of Service Required',
+                                        initialValue: provider.tempPay ?? '',
+                                        onChanged: provider.updateTempPay,
+                                        validator: (v) =>
+                                        v!.trim().isEmpty ? 'Required' : null,
+                                        icon: Icons.timeline_rounded,
+                                        hintText: 'e.g., 2-5 years, Entry Level, 10+ years',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildTextField(
+                                        label: 'Duty Location',
+                                        initialValue: provider.tempLocation ??
+                                            '',
+                                        onChanged: provider.updateTempLocation,
+                                        validator: (v) =>
+                                        v!.trim().isEmpty ? 'Required' : null,
+                                        icon: Icons.location_on_outlined,
+                                        hintText: 'e.g., Edwards AFB, CA or Worldwide Assignment',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildSectionCard(
+                              title: 'Duty Type & Required Skills',
+                              icon: Icons.precision_manufacturing_rounded,
+                              children: [
+                                _buildPillSelector(
+                                  title: 'Duty Assignment Type',
+                                  selectedItems: provider.tempWorkModes,
+                                  availableItems: workModeOptions,
+                                  color: primary,
+                                  onToggle: (item) {
+                                    print(
+                                        'Work mode toggle called: $item'); // Debug line
+                                    provider.toggleWorkMode(item);
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                _buildPillSelector(
+                                  title: 'Required Technical Skills',
+                                  selectedItems: provider.tempSkills,
+                                  availableItems: skillOptions,
+                                  color: const Color(0xFF228B22),
+                                  onToggle: (item) {
+                                    print(
+                                        'Skill toggle called: $item'); // Debug line
+                                    provider.toggleSkill(item);
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildSectionCard(
+                              title: 'Military Benefits & Incentives',
+                              icon: Icons.card_giftcard_rounded,
+                              children: [
+                                _buildPillSelector(
+                                  title: 'Available Benefits & Allowances',
+                                  selectedItems: provider.tempBenefits,
+                                  availableItems: benefitOptions,
+                                  color: const Color(0xFFB8860B),
+                                  onToggle: (item) {
+                                    print(
+                                        'Benefit toggle called: $item'); // Debug line
+                                    provider.toggleBenefit(item);
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              width: double.infinity,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: LinearGradient(
+                                  colors: [primary, primaryDark],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: primary.withOpacity(0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: provider.isPosting
+                                    ? null
+                                    : () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    final error = await provider.addJob();
+                                    if (!context.mounted) return;
+                                    if (error != null) {
+                                      ScaffoldMessenger
+                                          .of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(error),
+                                          backgroundColor: Colors.redAccent,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(12)),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger
+                                          .of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                              'Position posted successfully! 🚀'),
+                                          backgroundColor: Colors.green,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(12)),
+                                        ),
+                                      );
+                                      Navigator.of(context).pop();
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: white,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16)),
+                                ),
+                                child: provider.isPosting
+                                    ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2.5, color: Colors.white),
+                                )
+                                    : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                        Icons.flight_takeoff_rounded, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Post Position Now',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          );
+        }
+    );
+  }
+  Widget _buildPillSelector({
+    required String title,
+    required List<String> selectedItems,
+    required List<String> availableItems,
+    required Color color,
+    required void Function(String) onToggle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: availableItems.map((item) {
+            final isSelected = selectedItems.contains(item);
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  print('Pill tapped: $item, isSelected: $isSelected'); // Debug line
+                  onToggle(item);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? color.withOpacity(0.15) : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? color : Colors.grey.shade300,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildSectionCard(
-                        title: 'Unit & Position Information',
-                        icon: Icons.military_tech_rounded,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLogoUploader(provider),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    _buildTextField(
-                                      label: 'Position Title',
-                                      initialValue: provider.tempTitle,
-                                      onChanged: provider.updateTempTitle,
-                                      validator: (v) =>
-                                      v!.trim().isEmpty ? 'Required' : null,
-                                      icon: Icons.work_outline,
-                                      hintText: 'e.g., Aircraft Maintenance Technician, Pilot, Air Traffic Controller',
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: _buildTextField(
-                                            label: 'Air Force Unit/Base',
-                                            initialValue: provider.tempCompany ?? '',
-                                            onChanged: provider.updateTempCompany,
-                                            validator: (v) =>
-                                            v!.trim().isEmpty ? 'Required' : null,
-                                            icon: Icons.location_city_rounded,
-                                            hintText: 'e.g., 15th Wing, Edwards AFB',
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: _buildDropdownField(
-                                            label: 'Department/Squadron',
-                                            value: provider.tempDepartment ?? departmentOptions.first,
-                                            items: departmentOptions,
-                                            onChanged: (val) => provider.updateTempDepartment(val!),
-                                            icon: Icons.group_work_outlined,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSectionCard(
-                        title: 'Position Description & Requirements',
-                        icon: Icons.description_outlined,
-                        children: [
-                          _buildTextField(
-                            label: 'Position Description',
-                            initialValue: provider.tempDescription,
-                            onChanged: provider.updateTempDescription,
-                            validator: (v) =>
-                            v!.trim().isEmpty ? 'Required' : null,
-                            maxLines: 4,
-                            icon: Icons.edit_note_rounded,
-                            hintText: 'Describe the role, mission support requirements, and operational responsibilities',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            label: 'Primary Duties & Responsibilities',
-                            initialValue: provider.tempResponsibilities ?? '',
-                            onChanged: provider.updateTempResponsibilities,
-                            validator: (v) =>
-                            v!.trim().isEmpty ? 'Required' : null,
-                            maxLines: 3,
-                            icon: Icons.checklist_rounded,
-                            hintText: 'List key operational duties, maintenance tasks, or administrative responsibilities',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            label: 'Required Qualifications & Training',
-                            initialValue: provider.tempQualifications ?? '',
-                            onChanged: provider.updateTempQualifications,
-                            validator: (v) =>
-                            v!.trim().isEmpty ? 'Required' : null,
-                            maxLines: 3,
-                            icon: Icons.school_outlined,
-                            hintText: 'Military training, certifications, technical schools, or civilian education required',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSectionCard(
-                        title: 'Compensation & Pay Information',
-                        icon: Icons.attach_money_rounded,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildDropdownField(
-                                  label: 'Compensation Type',
-                                  value: provider.tempSalaryType ?? salaryTypeOptions.first,
-                                  items: salaryTypeOptions,
-                                  onChanged: (val) => provider.updateTempSalaryType(val!),
-                                  icon: Icons.payments_outlined,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildTextField(
-                                  label: 'Salary Range',
-                                  initialValue: provider.tempSalary ?? '',
-                                  onChanged: provider.updateTempSalary,
-                                  validator: (v) =>
-                                  v!.trim().isEmpty ? 'Required' : null,
-                                  icon: Icons.monetization_on_outlined,
-                                  hintText: 'e.g., \$45,000 - \$65,000 or E-5 Base Pay + BAH',
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            label: 'Additional Pay Details',
-                            initialValue: provider.tempPayDetails ?? '',
-                            onChanged: provider.updateTempPayDetails,
-                            maxLines: 2,
-                            icon: Icons.info_outline_rounded,
-                            hintText: 'Special pay, hazard pay, flight pay, bonuses, or allowances included',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSectionCard(
-                        title: 'Rank & Security Requirements',
-                        icon: Icons.security_rounded,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildDropdownField(
-                                  label: 'Minimum Rank Required',
-                                  value: provider.tempNature ?? rankRequirements.first,
-                                  items: rankRequirements,
-                                  onChanged: (val) => provider.updateTempNature(val!),
-                                  icon: Icons.stars_rounded,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildDropdownField(
-                                  label: 'Security Clearance',
-                                  value: provider.tempExperience ?? securityClearanceOptions.first,
-                                  items: securityClearanceOptions,
-                                  onChanged: (val) => provider.updateTempExperience(val!),
-                                  icon: Icons.verified_user_rounded,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  label: 'Years of Service Required',
-                                  initialValue: provider.tempPay ?? '',
-                                  onChanged: provider.updateTempPay,
-                                  validator: (v) =>
-                                  v!.trim().isEmpty ? 'Required' : null,
-                                  icon: Icons.timeline_rounded,
-                                  hintText: 'e.g., 2-5 years, Entry Level, 10+ years',
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildTextField(
-                                  label: 'Duty Location',
-                                  initialValue: provider.tempLocation ?? '',
-                                  onChanged: provider.updateTempLocation,
-                                  validator: (v) =>
-                                  v!.trim().isEmpty ? 'Required' : null,
-                                  icon: Icons.location_on_outlined,
-                                  hintText: 'e.g., Edwards AFB, CA or Worldwide Assignment',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSectionCard(
-                        title: 'Duty Type & Required Skills',
-                        icon: Icons.precision_manufacturing_rounded,
-                        children: [
-                          _buildPillSelector(
-                            title: 'Duty Assignment Type',
-                            selectedItems: provider.tempWorkModes,
-                            availableItems: workModeOptions,
-                            color: primary,
-                            onToggle: provider.toggleWorkMode,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildPillSelector(
-                            title: 'Required Technical Skills',
-                            selectedItems: provider.tempSkills,
-                            availableItems: skillOptions,
-                            color: const Color(0xFF228B22),
-                            onToggle: provider.toggleSkill,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSectionCard(
-                        title: 'Military Benefits & Incentives',
-                        icon: Icons.card_giftcard_rounded,
-                        children: [
-                          _buildPillSelector(
-                            title: 'Available Benefits & Allowances',
-                            selectedItems: provider.tempBenefits,
-                            availableItems: benefitOptions,
-                            color: const Color(0xFFB8860B),
-                            onToggle: provider.toggleBenefit,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSectionCard(
-                        title: 'Application & Contact Information',
-                        icon: Icons.contact_mail_rounded,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  label: 'Application Deadline',
-                                  initialValue: provider.tempDeadline ?? '',
-                                  onChanged: provider.updateTempDeadline,
-                                  validator: (v) =>
-                                  v!.trim().isEmpty ? 'Required' : null,
-                                  icon: Icons.calendar_today_rounded,
-                                  hintText: 'MM/DD/YYYY or "Until Filled"',
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildTextField(
-                                  label: 'Contact Email (.mil preferred)',
-                                  initialValue: provider.tempContactEmail ?? '',
-                                  onChanged: provider.updateTempContactEmail,
-                                  validator: (v) {
-                                    if (v!.trim().isEmpty) return 'Required';
-                                    if (!RegExp(
-                                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                        .hasMatch(v)) {
-                                      return 'Invalid email';
-                                    }
-                                    return null;
-                                  },
-                                  icon: Icons.email_outlined,
-                                  hintText: 'johndoe@mail.com',
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            label: 'Special Instructions for Applicants',
-                            initialValue: provider.tempInstructions ?? '',
-                            onChanged: provider.updateTempInstructions,
-                            maxLines: 2,
-                            icon: Icons.info_outline_rounded,
-                            hintText: 'PCS requirements, deployment readiness, physical fitness standards, etc.',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        width: double.infinity,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: LinearGradient(
-                            colors: [primary, primaryDark],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: primary.withOpacity(0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: provider.isPosting
-                              ? null
-                              : () async {
-                            if (_formKey.currentState!.validate()) {
-                              final error = await provider.addJob();
-                              if (!context.mounted) return;
-                              if (error != null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(error),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Position posted successfully! 🚀'),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
-                                Navigator.of(context).pop();
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: white,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: provider.isPosting
-                              ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2.5, color: Colors.white),
-                          )
-                              : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.flight_takeoff_rounded, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Post Position Now',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                      if (isSelected)
+                        Icon(Icons.check_rounded, size: 16, color: color),
+                      if (isSelected)
+                        const SizedBox(width: 4),
+                      Text(
+                        item,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected ? color : Colors.grey.shade700,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
-      ),
+      ],
     );
   }
-
   Widget _buildSectionCard({
     required String title,
     required IconData icon,
@@ -713,62 +778,5 @@ class _PostJobDialogState extends State<PostJobDialog> {
   }
 
 
-  Widget _buildPillSelector({
-    required String title,
-    required List<String> selectedItems,
-    required List<String> availableItems,
-    required Color color,
-    required void Function(String) onToggle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: availableItems.map((item) {
-            final isSelected = selectedItems.contains(item);
-            return GestureDetector(
-              onTap: () => onToggle(item),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? color.withOpacity(0.15) : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected ? color : Colors.grey.shade300,
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isSelected) Icon(Icons.check_rounded, size: 16, color: color),
-                    if (isSelected) const SizedBox(width: 4),
-                    Text(
-                      item,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected ? color : Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
+
 }
