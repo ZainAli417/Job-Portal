@@ -13,12 +13,14 @@ Stream<List<Map<String, dynamic>>> publicJobsStream() {
       .snapshots()
       .map((snapshot) {
     return snapshot.docs.map((doc) {
-      final data = Map<String, dynamic>.from(doc.data());
+      final rawData = doc.data() as Map? ?? {};
+      final data = rawData.map((key, value) => MapEntry(key.toString(), value));
       data['id'] = doc.id;
       return data;
     }).toList();
   });
 }
+
 
 /// Streams *all* public jobs, regardless of status
 Stream<List<Map<String, dynamic>>> allJobsStream() {
