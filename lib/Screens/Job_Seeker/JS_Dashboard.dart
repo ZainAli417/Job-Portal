@@ -127,89 +127,66 @@ class _JobSeekerDashboardState extends State<JobSeekerDashboard>
         children: [
           // Left Column - Main Content
           Expanded(
-            flex: 3,
-            child: ScrollConfiguration(
-              behavior: SmoothScrollBehavior(),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildWelcomeSection(),
-                    const SizedBox(height: 5),
-                    _buildStatsGrid(),
-                    const SizedBox(height: 5),
-                    SizedBox(
-                      height: 600, // Set a fixed height or calculate based on screen
-                      child: Consumer<job_seeker_provider>(
-                        builder: (context, provider, _) {
-                          return StreamBuilder<List<Map<String, dynamic>>>(
-                            stream: provider.publicJobsStream(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
+            flex: 3, // This remains, assuming it's inside a Row or Column.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Widgets that stay at the top
+                _buildWelcomeSection(),
+                const SizedBox(height: 5),
+                //_buildStatsGrid(),
+               // const SizedBox(height: 20), // A little more space
 
-                              if (snapshot.hasError) {
-                                return Center(
-                                  child: Text(
-                                    'Error loading jobs: ${snapshot.error}',
+                // The list, which will now scroll and fill the available space
+                Expanded(
+                  child: Consumer<JobSeekerProvider>(
+                    builder: (context, provider, _) {
+                      return StreamBuilder<List<Map<String, dynamic>>>(
+                        stream: provider.publicJobsStream(),
+                        builder: (context, snapshot) {
+                          // --- No changes to your state handling logic ---
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Text(
+                                'Error loading jobs: ${snapshot.error}',
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          }
+
+                          final jobs = snapshot.data ?? [];
+                          if (jobs.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.work_outline_rounded,
+                                      size: 80, color: Colors.grey.shade400),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'No jobs available right now.\nPlease check back later.',
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      color: Colors.red.shade700,
-                                    ),
                                   ),
-                                );
-                              }
+                                ],
+                              ),
+                            );
+                          }
 
-                              final jobs = snapshot.data ?? [];
-
-                              if (jobs.isEmpty) {
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.work_outline_rounded,
-                                          size: 80,
-                                          color: Colors.grey.shade400),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'No jobs available right now.\nPlease check back later.',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                              return Expanded
-                                (
-                                child:
-                                    RepaintBoundary(
-                                child: Padding(
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 20),
-                                  child: LiveJobsForSeeker(jobs: jobs),
-                                ),
-                                    ),
-                              );
-                            },
-                          );
+                          // --- Return the list directly ---
+                          // It will be scrollable if LiveJobsForSeeker uses a ListView.
+                          return LiveJobsForSeeker(jobs: jobs);
                         },
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-
           const SizedBox(width: 24),
 
           // Right Column - AI Assistant

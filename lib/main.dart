@@ -55,7 +55,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthNotifier()),
         ChangeNotifierProvider(create: (_) => R_TopNavProvider()),
         ChangeNotifierProvider(create: (_) => JobPostingProvider()),
-        ChangeNotifierProvider(create: (_) => job_seeker_provider()),
+        ChangeNotifierProvider(create: (_) => JobSeekerProvider()),
         ChangeNotifierProvider(create: (_) => JobApplicationsProvider()),
         ChangeNotifierProvider(create: (_) => ListAppliedJobsProvider()),
         ChangeNotifierProvider(create: (_) => ApplicantsProvider()),

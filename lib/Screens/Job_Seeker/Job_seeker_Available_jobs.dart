@@ -227,14 +227,15 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   : _buildExpandedSidebar(),
             ),
 
-            // Main Content Area
+// Main Content Area - A more robust layout
             Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Top Header with Search and Sort
+                  // 1. The header takes its natural height
                   _buildTopHeader(),
 
-                  // Job Cards List
+                  // 2. The list expands to fill the remaining space and handles its own scrolling
                   Expanded(
                     child: _buildJobsList(),
                   ),

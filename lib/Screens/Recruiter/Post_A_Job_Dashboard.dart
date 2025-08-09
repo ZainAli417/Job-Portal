@@ -117,7 +117,7 @@ class _JobPostingScreenState extends State<JobPostingScreen>
                   const SizedBox(height: 32),
                   SizedBox(
                     height: 600, // Set a fixed height or calculate based on screen
-                    child: Consumer<job_seeker_provider>(
+                    child: Consumer<JobSeekerProvider>(
                       builder: (context, provider, _) {
                         return StreamBuilder<List<Map<String, dynamic>>>(
                           stream: provider.allJobsStream(),
