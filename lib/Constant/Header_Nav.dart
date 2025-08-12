@@ -21,13 +21,10 @@ class HeaderNav extends StatelessWidget {
               const SizedBox(width: 40),
 
               // LOGO text
-              Text(
-                'LOGO',
-                style: GoogleFonts.montserrat(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w400,
-                ),
+              Image.asset(
+                'images/logo.jpeg',
+                height: 70,
+                fit: BoxFit.cover,
               ),
 
               const SizedBox(width: 60),

@@ -94,15 +94,11 @@ class MainLayoutState extends State<MainLayout> {
       child: Row(
         children: [
           // Logo
-          Text(
-            'LOGO_HERE',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: primaryColor,
-            ),
+          Image.asset(
+            'images/logo_main.png',
+            height: 60, // was fontSize: 20, so roughly similar visual height
+            fit: BoxFit.cover,
           ),
-
           const Spacer(),
 
           // Navigation Items

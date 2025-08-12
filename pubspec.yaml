@@ -48,6 +48,8 @@ flutter:
 
   assets:
     - images/
+    - images/logo.jpeg
+    - images/logo_main.png
     - images/splash.webp
     - images/signup_recruiter.svg
     - images/signup_jobseeker.svg
