@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_portal/Constant/Tagline_anim.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -48,87 +49,112 @@ class _SplashScreenState extends State<SplashScreen>
   static Color charcoalGray = Colors.black87;
   static const Color softShadow = Color(0x08000000);
   static const Color mediumShadow = Color(0x12000000);
+  late AnimationController _subtleController;
+  late Animation<double> _subtleAnimation;
 
   @override
   void initState() {
     super.initState();
     _initAnimations();
     _checkLoggedInUser();
-  }
+    _subtleController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )
+      ..repeat();
 
+    _subtleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _subtleController, curve: Curves.easeInOut),
+    );
+  }
   void _initAnimations() {
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 900), // smooth but not too slow
+      duration: const Duration(milliseconds: 1200), // slower fade
       vsync: this,
     );
     _slideController = AnimationController(
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1100), // smoother slide
       vsync: this,
     );
     _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+
     _rotationController = AnimationController(
-      duration: const Duration(seconds: 20),
+      duration: const Duration(seconds: 30), // slower background rotation
       vsync: this,
     )..repeat();
+
     _pulseController = AnimationController(
-      duration: const Duration(seconds: 6), // slower pulse
-      vsync: this,
-    )..repeat(reverse: true);
-    _floatingController = AnimationController(
-      duration: const Duration(seconds: 10), // much slower floating
-      vsync: this,
-    )..repeat(reverse: true);
-    _morphController = AnimationController(
-      duration: const Duration(seconds: 12), // slow morph for bars etc.
-      vsync: this,
-    )..repeat();
-    _breatheController = AnimationController(
-      duration: const Duration(seconds: 6), // slow breathing
+      duration: const Duration(seconds: 5), // even slower breathing
       vsync: this,
     )..repeat(reverse: true);
 
+    _floatingController = AnimationController(
+      duration: const Duration(seconds: 20), // smoother floating
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _morphController = AnimationController(
+      duration: const Duration(seconds: 20), // smoother background bar animation
+      vsync: this,
+    )..repeat();
+
+    _breatheController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    // fade → slide → scale with smoother easing
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutQuad),
     );
 
-    // Slide from slightly above down into place (subtle top-to-down movement)
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.06), // small top -> down offset (subtle)
+      begin: const Offset(0, -0.04), // smaller offset = less jerk
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutQuad),
     );
 
-    // scale (used where you already have ScaleTransition) — smaller range for subtlety
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeOut),
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInCirc),
     );
 
     _rotationAnimation =
         Tween<double>(begin: 0, end: 2 * math.pi).animate(_rotationController);
 
-    // pulse reduced amplitude to avoid jumpiness
-    _pulseAnimation = Tween<double>(begin: 0.985, end: 1.015).animate(
+    _pulseAnimation = Tween<double>(begin: 0.99, end: 1.01).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
-    // floating translate reduced amplitude
-    _floatingAnimation = Tween<double>(begin: -12, end: 12).animate(
-      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOutSine),
+    _floatingAnimation = Tween<double>(begin: -8, end: 8).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInCubic),
     );
 
-    // morph uses a smooth sine-like easing
     _morphAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _morphController, curve: Curves.easeInOutSine),
+      CurvedAnimation(parent: _morphController, curve: Curves.easeInBack),
     );
 
-    // breathe — tiny scale up
-    _breatheAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
-      CurvedAnimation(parent: _breatheController, curve: Curves.easeInOutSine),
+    _breatheAnimation = Tween<double>(begin: 1.0, end: 1.04).animate(
+      CurvedAnimation(parent: _breatheController, curve: Curves.easeOutSine),
     );
+  }
+
+  void _startAnimations() {
+    // Start fade immediately
+    _fadeController.forward();
+
+    // Slide in after fade begins (slightly longer gap)
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) _slideController.forward();
+    });
+
+    // Scale in last, so motion feels layered instead of all at once
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (mounted) _scaleController.forward();
+    });
   }
 
   Future<void> _checkLoggedInUser() async {
@@ -141,14 +167,14 @@ class _SplashScreenState extends State<SplashScreen>
       final uid = user.uid;
       try {
         final jobSeeker =
-            await firestore.collection('Job_Seeker').doc(uid).get();
+        await firestore.collection('Job_Seeker').doc(uid).get();
         if (jobSeeker.exists) {
           if (mounted) context.go('/dashboard');
           return;
         }
 
         final recruiter =
-            await firestore.collection('Recruiter').doc(uid).get();
+        await firestore.collection('Recruiter').doc(uid).get();
         if (recruiter.exists) {
           if (mounted) context.go('/recruiter-dashboard');
           return;
@@ -166,20 +192,6 @@ class _SplashScreenState extends State<SplashScreen>
       _startAnimations();
     }
   }
-  void _startAnimations() {
-    // start the fade (page-level) and then slide/scale to produce smoky top->down appearance
-    _fadeController.forward();
-
-    // small stagger so fade begins immediately, slide slightly after for smoky effect
-    Future.delayed(const Duration(milliseconds: 120), () {
-      _slideController.forward();
-    });
-
-    // scale in content slightly after slide begins to give smooth depth
-    Future.delayed(const Duration(milliseconds: 300), () {
-      _scaleController.forward();
-    });
-  }
 
 
   @override
@@ -196,6 +208,8 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     if (_checkingUser) {
@@ -206,6 +220,12 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: pureWhite,
       body: Stack(
         children: [
+          // Subtle animated background pattern
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _GeometricPatternPainter(),
+            ),
+          ),
           FadeTransition(
             opacity: _fadeAnimation,
             child: SlideTransition(
@@ -216,10 +236,9 @@ class _SplashScreenState extends State<SplashScreen>
                   children: [
                     _buildMinimalHeader(),
                     _buildExcitingHeroSection(),
-                    _buildFloatingFeaturesSection(),
-                    _buildElegantStatsSection(),
+                    _buildProfessionalFeaturesSection(),
                     _buildTestimonialsSection(),
-                    _buildCleanFooter(),
+                    _buildProfessionalFooter(),
                   ],
                 ),
               ),
@@ -233,71 +252,159 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildLoadingScreen() {
     return Scaffold(
       backgroundColor: pureWhite,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _breatheController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _breatheAnimation.value,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: pureWhite,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: softShadow,
-                          blurRadius: 40,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 20),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.center,
+            radius: 0.8,
+            colors: [
+              Colors.indigo.shade50,
+              pureWhite,
+              Colors.grey.shade50,
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Outer ring animation
+                  AnimatedBuilder(
+                    animation: _breatheController,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: 1 + (_breatheAnimation.value * 0.3),
+                        child: Container(
+                          width: 160,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.indigo.shade900.withOpacity(0.1),
+                              width: 2,
+                            ),
+                          ),
                         ),
-                        BoxShadow(
-                          color: mediumShadow,
-                          blurRadius: 80,
-                          spreadRadius: 0,
-                          offset: const Offset(0, 40),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.auto_awesome_outlined,
-                      color: Colors.indigo.shade900,
-                      size: 50,
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 60),
-            Text(
-              'Maha Services',
-              style: GoogleFonts.poppins(
-                fontSize: 36,
-                fontWeight: FontWeight.w300,
-                color: charcoalGray,
-                letterSpacing: 8,
+                  // Main loading circle
+                  AnimatedBuilder(
+                    animation: _breatheController,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _breatheAnimation.value,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.indigo.shade900,
+                                Colors.indigo.shade700,
+                                Colors.indigo.shade800,
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.indigo.withOpacity(0.3),
+                                blurRadius: 40,
+                                spreadRadius: 0,
+                                offset: const Offset(0, 20),
+                              ),
+                              BoxShadow(
+                                color: mediumShadow,
+                                blurRadius: 80,
+                                spreadRadius: 0,
+                                offset: const Offset(0, 40),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.auto_awesome_outlined,
+                            color: Colors.white,
+                            size: 50,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              width: 200,
-              height: 3,
-              child: AnimatedBuilder(
-                animation: _morphController,
-                builder: (context, child) {
-                  return LinearProgressIndicator(
-                    value: (_morphAnimation.value * 2) % 1,
-                    backgroundColor: Colors.indigo.shade900,
-                    valueColor: AlwaysStoppedAnimation<Color>(charcoalGray),
-                  );
-                },
+              const SizedBox(height: 60),
+              ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [
+                    Colors.indigo.shade900,
+                    Colors.indigo.shade600,
+                    Colors.indigo.shade800,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Maha Services',
+                  style: GoogleFonts.poppins(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                    letterSpacing: 12,
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                'Elite Professional Solutions',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w300,
+                  color: charcoalGray.withOpacity(0.7),
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 40),
+              Container(
+                width: 240,
+                height: 4,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(2),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.indigo.shade900.withOpacity(0.2),
+                      Colors.indigo.shade900,
+                      Colors.indigo.shade900.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+                child: AnimatedBuilder(
+                  animation: _morphController,
+                  builder: (context, child) {
+                    return FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: (_morphAnimation.value * 2) % 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.8),
+                              Colors.white,
+                              Colors.white.withOpacity(0.8),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -305,18 +412,25 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildMinimalHeader() {
     return Container(
-      height: 100,
+      height: 90,
       decoration: BoxDecoration(
         color: pureWhite.withOpacity(0.95),
         border: Border(
           bottom: BorderSide(
-            color: lightGray.withOpacity(0.5),
-            width: 0.5,
+            color: Colors.indigo.shade900.withOpacity(0.1),
+            width: 1,
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -336,68 +450,121 @@ class _SplashScreenState extends State<SplashScreen>
           animation: _rotationController,
           builder: (context, child) {
             return Transform.rotate(
-              angle: _rotationAnimation.value * 0.1, // Subtle rotation
+              angle: _rotationAnimation.value * 0.05,
               child: Container(
-                width: 50,
-                height: 50,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.indigo.shade900,
-                  borderRadius: BorderRadius.circular(15),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.indigo.shade900,
+                      Colors.indigo.shade700,
+                      Colors.indigo.shade800,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: mediumShadow,
+                      color: Colors.indigo.withOpacity(0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
-                child: const Icon(Icons.auto_awesome_outlined,
-                    color: pureWhite, size: 28),
+                child: const Icon(
+                  Icons.auto_awesome_outlined,
+                  color: pureWhite,
+                  size: 28,
+                ),
               ),
             );
           },
         ),
         const SizedBox(width: 20),
-        Text(
-          'Maha Services',
-          style: GoogleFonts.poppins(
-            fontSize: 28,
-            fontWeight: FontWeight.w500,
-            color: Colors.indigo.shade900,
-            letterSpacing: 2,
-          ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ShaderMask(
+              shaderCallback: (bounds) => LinearGradient(
+                colors: [Colors.indigo.shade900, Colors.indigo.shade600],
+              ).createShader(bounds),
+              child: Text(
+                'Maha Services',
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+            Text(
+              'Professional Excellence',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w300,
+                color: charcoalGray.withOpacity(0.6),
+                letterSpacing: 1.5,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
   Widget _buildMinimalNav() {
+    final navItems = [
+      {'text': 'CV Builder Pro', 'icon': Icons.description_outlined},
+      {'text': 'AI CV Analysis', 'icon': Icons.analytics_outlined},
+      {'text': 'Executive Recruiting', 'icon': Icons.business_center_outlined},
+      {'text': 'Enterprise TaaS', 'icon': Icons.school_outlined},
+    ];
+
     return Row(
-      children: [
-        _buildNavItem('Build Your CV'),
-        _buildNavItem('Analyze CV'),
-        _buildNavItem('Recruiter? Post A  Job'),
-        _buildNavItem('Training as a Service(TaaS)'),
-      ],
+      children: navItems.map((item) => _buildNavItem(item['text'] as String, item['icon'] as IconData)).toList(),
     );
   }
 
-  Widget _buildNavItem(String text) {
+  Widget _buildNavItem(String text, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            text,
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: charcoalGray.withOpacity(0.8),
-              letterSpacing: 0.5,
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.transparent,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: charcoalGray.withOpacity(0.7),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                text,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: charcoalGray.withOpacity(0.8),
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -408,45 +575,61 @@ class _SplashScreenState extends State<SplashScreen>
     return Row(
       children: [
         _buildCleanButton('Sign In', false, () {}),
-        const SizedBox(width: 16),
-        _buildCleanButton('Get Started', true, () {}),
+        const SizedBox(width: 12),
+        _buildCleanButton('Build Career', true, () {}),
       ],
     );
   }
 
-  Widget _buildCleanButton(
-      String text, bool isPrimary, VoidCallback onPressed) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isPrimary ? Colors.indigo.shade900 : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: isPrimary ? null : Border.all(color: lightGray, width: 1),
-        boxShadow: isPrimary
-            ? [
-                BoxShadow(
-                  color: mediumShadow,
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-            : null,
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: isPrimary ? pureWhite : charcoalGray,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _buildCleanButton(String text, bool isPrimary, VoidCallback onPressed) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: isPrimary
+              ? LinearGradient(
+            colors: [Colors.indigo.shade900, Colors.indigo.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
+              : null,
+          color: isPrimary ? null : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: isPrimary
+              ? null
+              : Border.all(color: Colors.indigo.shade900.withOpacity(0.2), width: 1.5),
+          boxShadow: isPrimary
+              ? [
+            BoxShadow(
+              color: Colors.indigo.withOpacity(0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ]
+              : [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.5,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: isPrimary ? pureWhite : Colors.indigo.shade900,
+            shadowColor: Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
       ),
@@ -454,11 +637,22 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildExcitingHeroSection() {
-    return SizedBox(
-      height: 900,
+    return Container(
+      height: 1000,
       width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            pureWhite,
+            Colors.indigo.shade50.withOpacity(0.3),
+            pureWhite,
+          ],
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
         child: Row(
           children: [
             Expanded(
@@ -469,25 +663,25 @@ class _SplashScreenState extends State<SplashScreen>
                   position: _slideAnimation,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       _buildExcitingBadge(),
-                      const SizedBox(height: 50),
-                      _buildDramaticTitle(),
                       const SizedBox(height: 40),
-                      _buildCleanSubtitle(),
-                      const SizedBox(height: 60),
-                      _buildModernCTAs(),
+                      ProfessionalDefenseTagline(),
+                      const SizedBox(height: 32),
+                      _buildEnhancedSubtitle(),
                       const SizedBox(height: 50),
+                      _buildModernCTAs(),
+                      const SizedBox(height: 60),
                       _buildMinimalTrustIndicators(),
                     ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 100),
+            const SizedBox(width: 50),
             Expanded(
-              flex: 5,
+              flex: 6,
               child: _buildExcitingHeroVisual(),
             ),
           ],
@@ -503,16 +697,28 @@ class _SplashScreenState extends State<SplashScreen>
         return Transform.scale(
           scale: _pulseAnimation.value,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.indigo.shade900,
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: lightGray, width: 1),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.indigo.shade900,
+                  Colors.indigo.shade700,
+                  Colors.indigo.shade800,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
               boxShadow: [
                 BoxShadow(
-                  color: softShadow,
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: Colors.indigo.withOpacity(0.4),
+                  blurRadius: 25,
+                  offset: const Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -520,19 +726,28 @@ class _SplashScreenState extends State<SplashScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 10,
-                  height: 10,
+                  width: 12,
+                  height: 12,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    gradient: RadialGradient(
+                      colors: [Colors.white, Colors.white.withOpacity(0.8)],
+                    ),
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.5),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Text(
-                  'AI-Powered • Next Generation Recruiting Platform',
+                  'Next-Gen AI • Fortune 500 Trusted • Enterprise Ready',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Colors.white,
                     letterSpacing: 0.5,
                   ),
@@ -545,110 +760,16 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildDramaticTitle() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Reduced "Where"
-        Text(
-          'Where',
-          style: GoogleFonts.poppins(
-            fontSize: 48,               // reduced size
-            fontWeight: FontWeight.w200, // lighter weight
-            color: Color(0xFF800000).withOpacity(0.55), // subtle mahroon tint
-            height: 0.95,
-            letterSpacing: -1,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // "Meets" + "Talent + Icon" in one line
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // reduced "Meets"
-            Text(
-              'Meets',
-              style: GoogleFonts.poppins(
-                fontSize: 28,               // much smaller than Talent
-                fontWeight: FontWeight.w300, // light
-                color: Color(0xFF800000).withOpacity(0.65), // muted mahroon
-                height: 1,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(width: 18),
-
-            // Emphasized "Talent"
-            Text(
-              'Talent',
-              style: GoogleFonts.poppins(
-                fontSize: 84,               // prominent
-                fontWeight: FontWeight.w900, // heavy
-                color: Color(0xFF800000),    // mahroon (emphasis)
-                height: 0.95,
-                letterSpacing: -3,
-              ),
-            ),
-
-            const SizedBox(width: 18),
-
-            // Animated icon beside Talent (keeps breathe animation)
-            AnimatedBuilder(
-              animation: _breatheController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _breatheAnimation.value,
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Color(0xFF800000), // mahroon icon background (emphasis)
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: mediumShadow,
-                          blurRadius: 30,
-                          offset: const Offset(0, 15),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.storm, color: pureWhite, size: 28),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 8),
-
-        // Big emphasized "Innovation"
-        Text(
-          'Innovation',
-          style: GoogleFonts.poppins(
-            fontSize: 96,                 // slightly larger to emphasize
-            fontWeight: FontWeight.w900,  // heavy
-            color: Color(0xFF800000),     // mahroon (strong emphasis)
-            height: 0.9,
-            letterSpacing: -3,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCleanSubtitle() {
+  Widget _buildEnhancedSubtitle() {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 500),
+      constraints: const BoxConstraints(maxWidth: 600),
       child: Text(
-        'Experience the future of recruitment with intelligent matching, seamless workflows, and meaningful connections that transform careers.',
+        'Empowering global professionals with intelligent career acceleration tools, executive-level training programs, and AI-driven recruitment solutions that deliver measurable results.',
         style: GoogleFonts.poppins(
-          fontSize: 22,
-          color: charcoalGray.withOpacity(0.7),
-          height: 1.6,
-          fontWeight: FontWeight.w300,
+          fontSize: 18,
+          fontWeight: FontWeight.w400,
+          color: charcoalGray.withOpacity(0.8),
+          height: 1.7,
           letterSpacing: 0.3,
         ),
       ),
@@ -658,59 +779,75 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildModernCTAs() {
     return ScaleTransition(
       scale: _scaleAnimation,
-      child: Row(
+      child:
+      Row(
         children: [
           _buildExcitingCTAButton(
             'Explore Opportunities',
-            Icons.arrow_forward_rounded,
-            () => context.go('/register'),
+            Icons.rocket_launch_outlined,
+                () => context.go('/register'),
             true,
             _hoverJobSeeker,
-            (hover) => setState(() => _hoverJobSeeker = hover),
+                (hover) => setState(() => _hoverJobSeeker = hover),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 20),
           _buildExcitingCTAButton(
-            'Hire Top Talent',
-            Icons.people_outline,
-            () => context.go('/recruiter-signup'),
+            'Hire Talent',
+            Icons.people_alt_outlined,
+                () => context.go('/recruiter-signup'),
             false,
             _hoverRecruiter,
-            (hover) => setState(() => _hoverRecruiter = hover),
+                (hover) => setState(() => _hoverRecruiter = hover),
           ),
-          const SizedBox(width: 40),
-          _buildWatchDemoButton(),
+          const SizedBox(width: 20),
+
+_buildWatchDemoButton()
         ],
+
       ),
+
     );
   }
 
-  Widget _buildExcitingCTAButton(
-      String text,
-      IconData icon,
-      VoidCallback onPressed,
-      bool isPrimary,
-      bool isHovered,
-      Function(bool) onHover) {
+  Widget _buildExcitingCTAButton(String text, IconData icon, VoidCallback onPressed, bool isPrimary, bool isHovered, Function(bool) onHover) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => onHover(true),
       onExit: (_) => onHover(false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
         transform: isHovered
-            ? Matrix4.translationValues(0, -6, 0)
+            ? Matrix4.translationValues(0, -8, 0)
             : Matrix4.identity(),
         child: Container(
           decoration: BoxDecoration(
-            color: isPrimary ? Colors.indigo.shade900 : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: isPrimary ? null : Border.all(color: lightGray, width: 1.5),
+            gradient: isPrimary
+                ? LinearGradient(
+              colors: isHovered
+                  ? [Colors.indigo.shade800, Colors.indigo.shade600]
+                  : [Colors.indigo.shade900, Colors.indigo.shade700],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+                : null,
+            color: isPrimary ? null : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: isPrimary
+                ? null
+                : Border.all(
+                color: isHovered
+                    ? Colors.indigo.shade900.withOpacity(0.4)
+                    : Colors.indigo.shade900.withOpacity(0.2),
+                width: 2
+            ),
             boxShadow: [
               BoxShadow(
-                color: isHovered ? mediumShadow : softShadow,
-                blurRadius: isHovered ? 30 : 15,
-                offset: Offset(0, isHovered ? 12 : 6),
+                color: isPrimary
+                    ? Colors.indigo.withOpacity(isHovered ? 0.5 : 0.3)
+                    : Colors.black.withOpacity(isHovered ? 0.15 : 0.05),
+                blurRadius: isHovered ? 35 : 20,
+                offset: Offset(0, isHovered ? 15 : 8),
               ),
             ],
           ),
@@ -721,17 +858,16 @@ class _SplashScreenState extends State<SplashScreen>
               text,
               style: GoogleFonts.poppins(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
               ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: isPrimary ? pureWhite : charcoalGray,
+              foregroundColor: isPrimary ? pureWhite : Colors.indigo.shade900,
               shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             ),
           ),
         ),
@@ -742,42 +878,121 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildWatchDemoButton() {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: Row(
-        children: [
-          AnimatedBuilder(
-            animation: _pulseController,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _pulseAnimation.value,
-                child: Container(
-                  width: 56,
-                  height: 56,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        child: Row(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: 1 + (_pulseAnimation.value * 0.2),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.shade900.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                Container(
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.indigo.shade900,
+                    gradient: LinearGradient(
+                      colors: [Colors.indigo.shade900, Colors.indigo.shade700],
+                    ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: lightGray, width: 1),
                     boxShadow: [
                       BoxShadow(
-                        color: softShadow,
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
+                        color: Colors.indigo.withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: Icon(Icons.play_arrow_rounded,
-                      color: Colors.white, size: 24),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Experience TaaS',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: charcoalGray.withOpacity(0.9),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                Text(
+                  '3 min demo',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: charcoalGray.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalTrustIndicators() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.indigo.shade900.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-          const SizedBox(width: 16),
+        ],
+      ),
+      child: Row(
+        children: [
           Text(
-            'Experience TaaS',
+            'Trusted by Industry Leaders',
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 14,
+              color: charcoalGray.withOpacity(0.6),
               fontWeight: FontWeight.w500,
-              color: charcoalGray.withOpacity(0.8),
-              letterSpacing: 0.5,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(width: 40),
+          ...['Google', 'Microsoft', 'Meta', 'Netflix'].map(
+                (company) => Padding(
+              padding: const EdgeInsets.only(right: 32),
+              child: Text(
+                company,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.indigo.shade900.withOpacity(0.8),
+                  letterSpacing: 1,
+                ),
+              ),
             ),
           ),
         ],
@@ -785,36 +1000,10 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildMinimalTrustIndicators() {
-    return Row(
-      children: [
-        Text(
-          'Trusted by',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: charcoalGray.withOpacity(0.5),
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(width: 32),
-        ...['Google', 'Meta', 'Apple', 'Netflix'].map(
-          (company) => Padding(
-            padding: const EdgeInsets.only(right: 32),
-            child: Text(
-              company,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w200,
-                color: charcoalGray.withOpacity(0.7),
-                letterSpacing: 1.5,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+
+
+
+
 
   Widget _buildExcitingHeroVisual() {
     return AnimatedBuilder(
@@ -951,14 +1140,14 @@ class _SplashScreenState extends State<SplashScreen>
     final Color accentBorder = index == 0
         ? Colors.indigo.shade900.withOpacity(0.18)
         : index == 1
-            ? Colors.indigo.shade900.withOpacity(0.18)
-            : Colors.indigo.shade900.withOpacity(0.12);
+        ? Colors.indigo.shade900.withOpacity(0.18)
+        : Colors.indigo.shade900.withOpacity(0.12);
 
     final Color valueColor = index == 0
         ? Colors.indigo.shade900
         : index == 1
-            ? Colors.indigo.shade900
-            : Colors.indigo.shade900;
+        ? Colors.indigo.shade900
+        : Colors.indigo.shade900;
 
     final Color cardBg = Colors.white;
 
@@ -1038,7 +1227,8 @@ class _SplashScreenState extends State<SplashScreen>
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.indigo.shade900, // switched heading to mahroon for emphasis
+                color: Colors.indigo
+                    .shade900, // switched heading to mahroon for emphasis
               ),
             ),
             const SizedBox(height: 20),
@@ -1051,13 +1241,13 @@ class _SplashScreenState extends State<SplashScreen>
 
                   // palette cycling through mahroon + indigo variants
                   final List<Color> barColors = [
-                  Colors.indigo.shade800,                 // mahroon (primary)
-                    Colors.indigo.shade900,           // indigo (accent)
-                    Colors.indigo.shade700,                // darker mahroon
-                    Colors.indigo.shade600,           // lighter indigo
-                    Colors.indigo.shade900,               // warm mahroon tint
-                    Colors.indigo.shade400,           // pale indigo
-                  Colors.indigo.shade600, // mahroon slightly faded
+                    Colors.indigo.shade800, // mahroon (primary)
+                    Colors.indigo.shade900, // indigo (accent)
+                    Colors.indigo.shade700, // darker mahroon
+                    Colors.indigo.shade600, // lighter indigo
+                    Colors.indigo.shade900, // warm mahroon tint
+                    Colors.indigo.shade400, // pale indigo
+                    Colors.indigo.shade600, // mahroon slightly faded
                   ];
 
                   final baseColor = barColors[index % barColors.length];
@@ -1326,8 +1516,8 @@ class _SplashScreenState extends State<SplashScreen>
                           color: index == 0
                               ? Colors.white
                               : index == 1
-                                  ? Colors.indigo.shade50
-                                  : Colors.indigo.shade100,
+                              ? Colors.indigo.shade50
+                              : Colors.indigo.shade100,
                           shape: BoxShape.circle,
                           border: Border.all(
                               color: Colors.indigo.shade900.withOpacity(0.12)),
@@ -1403,53 +1593,93 @@ class _SplashScreenState extends State<SplashScreen>
               shape: BoxShape.circle,
             ),
             child:
-                const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+            const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFloatingFeaturesSection() {
+
+
+
+
+
+
+  Widget _buildProfessionalFeaturesSection() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 140, horizontal: 80),
+      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.grey.shade50,
+            Colors.white,
+            Colors.grey.shade50,
+          ],
+        ),
+      ),
       child: Column(
         children: [
-          _buildCleanSectionHeader(
-            'Revolutionary Features',
-            'Advanced tools designed for the modern workforce',
+          _buildProfessionalSectionHeader(
+            'Elite Talent Solutions',
+            'Advanced AI-powered recruitment platform connecting world-class professionals with Fortune 500 companies',
           ),
-          const SizedBox(height: 100),
-          _buildMinimalFeatureGrid(),
+          const SizedBox(height: 60),
+          _buildProfessionalFeatureGrid(),
         ],
       ),
     );
   }
 
-  Widget _buildCleanSectionHeader(String title, String subtitle) {
+  Widget _buildProfessionalSectionHeader(String title, String subtitle) {
     return Column(
       children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 52,
-            fontWeight: FontWeight.w200,
-            color: charcoalGray,
-            letterSpacing: -2,
+        ShaderMask(
+          shaderCallback: (bounds) =>
+              LinearGradient(
+                colors: [Colors.indigo.shade900, Colors.indigo.shade600],
+              ).createShader(bounds),
+          child: Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 48,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              letterSpacing: -1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: 80,
+          height: 6,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.indigo.shade900, Colors.indigo.shade600],
+            ),
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.indigo.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 20),
         Container(
-          constraints: const BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 800),
           child: Text(
             subtitle,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w300,
-              color: charcoalGray.withOpacity(0.6),
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey.shade700,
               height: 1.5,
-              letterSpacing: 0.5,
             ),
           ),
         ),
@@ -1457,202 +1687,228 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildMinimalFeatureGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 40,
-        mainAxisSpacing: 40,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: 6,
-      itemBuilder: (context, index) => _buildMinimalFeatureCard(index),
+  Widget _buildProfessionalFeatureGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxis = constraints.maxWidth > 1200
+            ? 3
+            : constraints.maxWidth > 800
+            ? 2
+            : 1;
+
+        // responsive fixed tile height (lower values = less vertical space)
+        final double tileHeight = constraints.maxWidth > 1200
+            ? 240.0
+            : constraints.maxWidth > 800
+            ? 220.0
+            : 180.0;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxis,
+            crossAxisSpacing: 24,
+            mainAxisSpacing: 24,
+            mainAxisExtent: tileHeight,
+          ),
+          itemCount: 6,
+          itemBuilder: (context, index) =>
+              _buildProfessionalFeatureCard(index),
+        );
+      },
     );
   }
 
-  Widget _buildMinimalFeatureCard(int index) {
+
+  Widget _buildProfessionalFeatureCard(int index) {
     final features = [
       {
-        'icon': Icons.psychology_outlined,
+        'icon': Icons.public,
+        'title': 'Global Network',
+        'desc': 'Access premium opportunities across 50+ countries with verified multinational corporations',
+        'color': Colors.blue.shade700,
+      },
+      {
+        'icon': Icons.verified_outlined,
+        'title': 'Executive Screening',
+        'desc': 'Military-grade background verification with psychological profiling and competency analysis',
+        'color': Colors.green.shade700,
+      },
+      {
+        'icon': Icons.psychology_alt_outlined,
         'title': 'AI Matching',
-        'desc': 'Neural networks analyze compatibility and potential'
+        'desc': 'Advanced machine learning algorithms for precise skill-role compatibility scoring',
+        'color': Colors.purple.shade700,
       },
       {
-        'icon': Icons.analytics_outlined,
-        'title': 'Smart Analytics',
-        'desc': 'Real-time insights with predictive intelligence'
+        'icon': Icons.timeline,
+        'title': 'White-Glove Service',
+        'desc': 'Dedicated relationship managers handling complete recruitment lifecycle management',
+        'color': Colors.orange.shade700,
       },
       {
-        'icon': Icons.video_call_outlined,
-        'title': 'Virtual Interviews',
-        'desc': 'Seamless video interviews with smart scheduling'
+        'icon': Icons.group_work,
+        'title': 'Elite Recruiters',
+        'desc': 'Exclusive network of C-level recruiters from top-tier executive search firms',
+        'color': Colors.teal.shade700,
       },
       {
-        'icon': Icons.school_outlined,
-        'title': 'Skill Assessment',
-        'desc': 'Automated testing with instant verification'
-      },
-      {
-        'icon': Icons.group_outlined,
-        'title': 'Team Collaboration',
-        'desc': 'Streamlined workflows for hiring teams'
-      },
-      {
-        'icon': Icons.security_outlined,
-        'title': 'Enterprise Security',
-        'desc': 'Bank-level encryption and compliance'
+        'icon': Icons.insights,
+        'title': 'Predictive Analytics',
+        'desc': 'Real-time market intelligence with salary benchmarking and career trajectory mapping',
+        'color': Colors.red.shade700,
       },
     ];
 
     final feature = features[index];
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: AnimatedBuilder(
-        animation: _floatingController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0,
-                math.sin(_floatingController.value * 2 * math.pi + index) * 8),
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 800 + (index * 200)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - value)),
+          child: Opacity(
+            opacity: value,
             child: Container(
+              padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: pureWhite,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: lightGray.withOpacity(0.2)),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey.shade200),
                 boxShadow: [
                   BoxShadow(
-                    color: softShadow,
+                    color: Colors.black.withOpacity(0.08),
                     blurRadius: 25,
-                    offset: const Offset(0, 15),
-                  ),
-                  BoxShadow(
-                    color: mediumShadow,
-                    blurRadius: 50,
-                    offset: const Offset(0, 30),
+                    offset: const Offset(0, 10),
+                    spreadRadius: -5,
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(40),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _breatheController,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: 1.0 +
-                              (math.sin(_breatheController.value * 2 * math.pi +
-                                      index) *
-                                  0.05),
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: snowWhite,
-                              borderRadius: BorderRadius.circular(20),
-                              border:
-                                  Border.all(color: lightGray.withOpacity(0.3)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: softShadow,
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              feature['icon'] as IconData,
-                              size: 36,
-                              color: charcoalGray.withOpacity(0.8),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      feature['title'] as String,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: charcoalGray,
-                        letterSpacing: 0.5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          feature['color'] as Color,
+                          (feature['color'] as Color).withOpacity(0.7)
+                        ],
                       ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (feature['color'] as Color).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      feature['desc'] as String,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        color: charcoalGray.withOpacity(0.6),
-                        height: 1.6,
-                        letterSpacing: 0.3,
-                      ),
+                    child: Icon(
+                      feature['icon'] as IconData,
+                      size: 32,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    feature['title'] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    feature['desc'] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey.shade600,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildElegantStatsSection() {
+  Widget _buildProfessionalStatsSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 120, horizontal: 80),
-      padding: const EdgeInsets.all(80),
+      margin: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+      padding: const EdgeInsets.all(50),
       decoration: BoxDecoration(
-        color: snowWhite,
-        borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: lightGray.withOpacity(0.2)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.indigo.shade900,
+            Colors.indigo.shade800,
+            Colors.indigo.shade900,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: softShadow,
-            blurRadius: 40,
-            offset: const Offset(0, 20),
+            color: Colors.indigo.withOpacity(0.3),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
           ),
         ],
       ),
       child: Column(
         children: [
+          ShaderMask(
+            shaderCallback: (bounds) =>
+                const LinearGradient(
+                  colors: [Colors.white, Colors.white70],
+                ).createShader(bounds),
+            child: Text(
+              'Performance Excellence',
+              style: GoogleFonts.poppins(
+                fontSize: 42,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.8,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
-            'Platform Impact',
+            'Industry-leading metrics driving executive career success',
             style: GoogleFonts.poppins(
-              fontSize: 42,
-              fontWeight: FontWeight.w200,
-              color: charcoalGray,
-              letterSpacing: -1,
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+              color: Colors.white.withOpacity(0.8),
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            width: 100,
-            height: 2,
-            decoration: BoxDecoration(
-              color: charcoalGray.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-          const SizedBox(height: 80),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          const SizedBox(height: 50),
+          Wrap(
+            spacing: 40,
+            runSpacing: 30,
+            alignment: WrapAlignment.center,
             children: [
-              _buildElegantStatItem(
-                  '50K+', 'Active Positions', Icons.work_outline),
-              _buildElegantStatItem(
-                  '100K+', 'Talented Professionals', Icons.people_outline),
-              _buildElegantStatItem(
-                  '2K+', 'Partner Companies', Icons.business_outlined),
-              _buildElegantStatItem(
-                  '98%', 'Success Rate', Icons.trending_up_outlined),
+              _buildProfessionalStatItem(
+                  '50K+', 'Executive Positions', Icons.work_outline,
+                  Colors.amber.shade400),
+              _buildProfessionalStatItem(
+                  '250K+', 'Verified Executives', Icons.people_outline,
+                  Colors.cyan.shade400),
+              _buildProfessionalStatItem(
+                  '8K+', 'Elite Headhunters', Icons.business_outlined,
+                  Colors.green.shade400),
+              _buildProfessionalStatItem(
+                  '97%', 'Success Rate', Icons.trending_up_outlined,
+                  Colors.pink.shade400),
             ],
           ),
         ],
@@ -1660,52 +1916,57 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildElegantStatItem(String number, String label, IconData icon) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: 1.0 + (_pulseAnimation.value - 1.0) * 0.03,
+  Widget _buildProfessionalStatItem(String number, String label, IconData icon,
+      Color accentColor) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 1500),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Container(
+          width: 220,
           child: Column(
             children: [
               Container(
-                width: 100,
-                height: 100,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: pureWhite,
-                  shape: BoxShape.circle,
-                  border:
-                      Border.all(color: lightGray.withOpacity(0.3), width: 1),
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
                   boxShadow: [
                     BoxShadow(
-                      color: softShadow,
+                      color: accentColor.withOpacity(0.3),
                       blurRadius: 20,
-                      offset: const Offset(0, 10),
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child:
-                    Icon(icon, size: 40, color: charcoalGray.withOpacity(0.8)),
+                child: Icon(icon, size: 36, color: accentColor),
               ),
-              const SizedBox(height: 32),
-              Text(
-                number,
-                style: GoogleFonts.poppins(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w800,
-                  color: charcoalGray,
-                  letterSpacing: -2,
+              const SizedBox(height: 20),
+              ShaderMask(
+                shaderCallback: (bounds) =>
+                    LinearGradient(
+                      colors: [Colors.white, accentColor],
+                    ).createShader(bounds),
+                child: Text(
+                  number,
+                  style: GoogleFonts.poppins(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -1,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                  color: charcoalGray.withOpacity(0.6),
-                  letterSpacing: 0.5,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withOpacity(0.9),
                 ),
               ),
             ],
@@ -1717,163 +1978,238 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildTestimonialsSection() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 140, horizontal: 80),
+      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white,
+            Colors.grey.shade50,
+          ],
+        ),
+      ),
       child: Column(
         children: [
-          _buildCleanSectionHeader(
-            'Success Stories',
-            'Hear from our community of professionals and recruiters',
+          _buildProfessionalSectionHeader(
+            'Executive Testimonials',
+            'Transformative career experiences from C-suite executives and Fortune 500 talent leaders',
           ),
-          const SizedBox(height: 100),
-          SizedBox(
-            height: 420,
-            child: PageView.builder(
-              itemCount: 3,
-              itemBuilder: (context, index) =>
-                  _buildMinimalTestimonialCard(index),
-            ),
-          ),
+          const SizedBox(height: 60),
+          _buildTestimonialGrid(),
         ],
       ),
     );
   }
 
-  Widget _buildMinimalTestimonialCard(int index) {
+  Widget _buildTestimonialGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildProfessionalTestimonialCard(0),
+              const SizedBox(width: 24),
+              _buildProfessionalTestimonialCard(1),
+              const SizedBox(width: 24),
+              _buildProfessionalTestimonialCard(2),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfessionalTestimonialCard(int index) {
     final testimonials = [
       {
-        'name': 'Sarah Chen',
-        'role': 'Senior Developer • Meta',
-        'content':
-            'TalentHub\'s intelligent matching found me the perfect role that aligned with my career aspirations. The entire process was remarkably seamless.',
-        'initial': 'S',
+        'name': 'Alexandra Sterling',
+        'role': 'Chief Technology Officer • Meta',
+        'content': 'Revolutionary platform that transformed our executive hiring strategy. Reduced time-to-hire by 75% while dramatically improving candidate quality and cultural fit.',
+        'type': 'CTO',
+        'company': 'Meta',
+        'avatar': 'AS'
       },
       {
-        'name': 'Marcus Johnson',
-        'role': 'HR Director • Stripe',
-        'content':
-            'We reduced our hiring timeline by 70% while significantly improving candidate quality. This platform is genuinely transformative.',
-        'initial': 'M',
+        'name': 'Marcus Chen',
+        'role': 'Managing Director • JPMorgan Chase',
+        'content': 'Exceptional white-glove service with unparalleled access to C-suite opportunities. Secured my dream executive role with comprehensive support throughout the entire process.',
+        'type': 'Executive',
+        'company': 'JPMorgan',
+        'avatar': 'MC'
       },
       {
-        'name': 'Elena Rodriguez',
-        'role': 'UX Designer • Airbnb',
-        'content':
-            'The skill assessment and cultural analysis helped me discover a company where I truly belong and can grow professionally.',
-        'initial': 'E',
+        'name': 'Dr. Elena Rodriguez',
+        'role': 'Global Head of Talent • McKinsey',
+        'content': 'Game-changing recruitment intelligence with predictive analytics that consistently delivers top-tier executive talent. Our strategic partnership has been transformational.',
+        'type': 'Talent Lead',
+        'company': 'McKinsey',
+        'avatar': 'ER'
       },
     ];
 
     final testimonial = testimonials[index];
+    final colors = [
+      Colors.indigo.shade700,
+      Colors.teal.shade700,
+      Colors.purple.shade700
+    ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: AnimatedBuilder(
-        animation: _floatingController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0,
-                math.sin(_floatingController.value * 2 * math.pi + index) * 5),
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 1000 + (index * 300)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.8 + (0.2 * value),
+          child: Opacity(
+            opacity: value,
             child: Container(
+              width: 400,
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: pureWhite,
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: lightGray.withOpacity(0.2)),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                    color: colors[index].withOpacity(0.1), width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: softShadow,
-                    blurRadius: 40,
-                    offset: const Offset(0, 25),
+                    color: colors[index].withOpacity(0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
+                    spreadRadius: -5,
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(50),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: snowWhite,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: lightGray.withOpacity(0.3)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: softShadow,
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colors[index],
+                              colors[index].withOpacity(0.7)
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          testimonial['initial'] as String,
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w300,
-                            color: charcoalGray,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors[index].withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            testimonial['avatar']!,
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              testimonial['name']!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey.shade900,
+                              ),
+                            ),
+                            Text(
+                              testimonial['role']!,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: colors[index],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colors[index].withOpacity(0.1),
+                              colors[index].withOpacity(0.05)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                              color: colors[index].withOpacity(0.2)),
+                        ),
+                        child: Text(
+                          testimonial['type']!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: colors[index],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade100),
                     ),
-                    const SizedBox(height: 32),
-                    Text(
+                    child: Text(
                       '"${testimonial['content']}"',
-                      textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w300,
-                        color: charcoalGray.withOpacity(0.8),
-                        height: 1.7,
-                        letterSpacing: 0.3,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade700,
+                        height: 1.6,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                    const SizedBox(height: 40),
-                    Text(
-                      testimonial['name'] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: charcoalGray,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      testimonial['role'] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        color: charcoalGray.withOpacity(0.5),
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildCleanFooter() {
+  Widget _buildProfessionalFooter() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 80),
       decoration: BoxDecoration(
-        color: snowWhite,
-        border: Border(
-          top: BorderSide(color: lightGray.withOpacity(0.3), width: 1),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.indigo.shade900,
+            Colors.indigo.shade800,
+            Colors.indigo.shade900,
+          ],
         ),
       ),
       child: Column(
         children: [
           _buildFooterCTA(),
-          const SizedBox(height: 80),
           _buildFooterContent(),
-          const SizedBox(height: 60),
-          // _buildFooterBottom(),
         ],
       ),
     );
@@ -1881,81 +2217,281 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildFooterCTA() {
     return Container(
-      padding: const EdgeInsets.all(60),
-      decoration: BoxDecoration(
-        color: pureWhite,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: lightGray.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: softShadow,
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 40),
+      child: Container(
+        padding: const EdgeInsets.all(50),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 40,
+              offset: const Offset(0, 20),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ShaderMask(
+                    shaderCallback: (bounds) =>
+                        LinearGradient(
+                          colors: [
+                            Colors.indigo.shade900,
+                            Colors.indigo.shade600
+                          ],
+                        ).createShader(bounds),
+                    child: Text(
+                      'Ready to Elevate Your\nCareer to Executive Level?',
+                      style: GoogleFonts.poppins(
+                        fontSize: 38,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.2,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Join the exclusive network of C-suite executives and Fortune 500 leaders.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 40),
+            Column(
               children: [
-                Text(
-                  'Ready to Transform\nYour Career Journey?',
-                  style: GoogleFonts.poppins(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w300,
-                    color: charcoalGray,
-                    height: 1.2,
-                    letterSpacing: -1,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Join thousands of professionals who discovered their perfect opportunities.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w300,
-                    color: charcoalGray.withOpacity(0.6),
-                    letterSpacing: 0.3,
-                  ),
-                ),
+                _buildProfessionalCTAButton(
+                    'Executive Access', () {}, Colors.indigo.shade800),
+                const SizedBox(height: 12),
+                _buildProfessionalCTAButton(
+                    'Recruiter Portal', () {}, Colors.teal.shade700),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfessionalCTAButton(String text, VoidCallback onPressed,
+      Color color) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        elevation: 8,
+        shadowColor: color.withOpacity(0.4),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(width: 60),
-          _buildExcitingCTAButton(
-            'Begin Journey',
-            Icons.arrow_forward_rounded,
-            () => context.go('/register'),
-            true,
-            false,
-            (hover) {},
-          ),
+          const SizedBox(width: 8),
+          Icon(Icons.arrow_forward, size: 20),
         ],
       ),
     );
   }
 
   Widget _buildFooterContent() {
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Expanded(
-          flex: 2,
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            _buildCleanLogo(),
-            const SizedBox(height: 32),
-            Text(
-              'The future of recruitment.\nBuilt for the modern workforce.',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w300,
-                color: charcoalGray.withOpacity(0.6),
-                height: 1.6,
-                letterSpacing: 0.3,
+    return Container(
+      padding: const EdgeInsets.all(50),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          const LinearGradient(
+                            colors: [Colors.white, Colors.white70],
+                          ).createShader(bounds),
+                      child: Text(
+                        'Maha Services Executive',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Premier executive recruitment platform connecting world-class C-suite talent with Fortune 500 opportunities through advanced AI-powered matching.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white.withOpacity(0.8),
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )
-          ]))
-    ]);
+              const SizedBox(width: 50),
+              _buildFooterColumn('Executive Services', [
+                'C-Suite Opportunities',
+                'Executive Coaching',
+                'Leadership Assessment',
+                'Career Transformation'
+              ]),
+              const SizedBox(width: 30),
+              _buildFooterColumn('For Recruiters', [
+                'Premium Listings',
+                'Executive Search',
+                'Talent Intelligence',
+                'White-Label Solutions'
+              ]),
+              const SizedBox(width: 30),
+              _buildFooterColumn('Company', [
+                'About Excellence',
+                'Partner Network',
+                'Privacy & Security',
+                'Terms & Conditions'
+              ]),
+            ],
+          ),
+          const SizedBox(height: 40),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Colors.white.withOpacity(0.15)),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '© 2025 Maha Services Executive. All rights reserved. | Elite Recruitment Solutions',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withOpacity(0.7),
+                  ),
+                ),
+                Row(
+                  children: [
+                    _buildSocialIcon(Icons.dialer_sip, Colors.blue.shade600),
+                    const SizedBox(width: 12),
+                    _buildSocialIcon(Icons.facebook, Colors.indigo.shade600),
+                    const SizedBox(width: 12),
+                    _buildSocialIcon(Icons.language, Colors.teal.shade600),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
+  Widget _buildFooterColumn(String title, List<String> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...items.map((item) =>
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                item,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              ),
+            )),
+      ],
+    );
+  }
+
+  Widget _buildSocialIcon(IconData icon, Color accentColor) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.1),
+            Colors.white.withOpacity(0.05)
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: Icon(icon, size: 20, color: accentColor),
+    );
+  }
+}
+
+
+// Custom painter for subtle geometric background pattern
+class _GeometricPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.indigo.shade900.withOpacity(0.02)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    final spacing = 80.0;
+
+    // Draw subtle grid pattern
+    for (double x = 0; x <= size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    for (double y = 0; y <= size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+
+    // Add some geometric shapes
+    for (int i = 0; i < 5; i++) {
+      final center = Offset(
+        (i * spacing * 3) % size.width,
+        (i * spacing * 2) % size.height,
+      );
+      canvas.drawCircle(center, 20, paint..color = Colors.indigo.shade900.withOpacity(0.01));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
