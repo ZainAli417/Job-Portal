@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,148 +10,115 @@ class HeaderNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
 
-    return ClipPath(
-      // Optional: Add a custom clipper here if you want a curved bottom
-      child: Container(
-        color: primaryColor,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: double.infinity),
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white.withOpacity(0.8), Colors.white.withOpacity(0.6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: const Border(bottom: BorderSide(color: Colors.black12, width: 0.6)),
+          ),
           child: Row(
             children: [
-              const SizedBox(width: 40),
-
-              // LOGO text
+              // Logo
               Image.asset(
                 'images/logo.jpeg',
-                height: 70,
+                height: 50,
                 fit: BoxFit.cover,
               ),
 
-              const SizedBox(width: 60),
+              const SizedBox(width: 40),
 
-              // Simple nav items
-              TextButton(
-                onPressed: () {
-context.pushReplacement('/');                },
-                child: Text(
-                  'Home',
-                  style: GoogleFonts.montserrat(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+              // Navigation Links
+              _NavLink(
+                label: "Home",
+                onTap: () => context.go('/'),
               ),
-              const SizedBox(width: 16),
-
-              TextButton(
-                onPressed: () {
-context.go('/register');                },
-                child: Text(
-                  'Create Your Profile',
-                  style: GoogleFonts.montserrat(
-                    color: Colors.white,
-                    fontSize: 16,
-
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+              _NavLink(
+                label: "Create Profile",
+                onTap: () => context.go('/register'),
               ),
-              const SizedBox(width: 16),
-
-              TextButton(
-                onPressed: () {
-                  context.go('/login');                    },
-                child: Text(
-                  'Find a Job',
-                  style: GoogleFonts.montserrat(
-                    color: Colors.white,
-                    fontSize: 16,
-
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+              _NavLink(
+                label: "Find a Job",
+                onTap: () => context.go('/login'),
               ),
 
               const Spacer(),
 
-              // LOGIN Button
-              OutlinedButton(
-                onPressed: () {
-                  GoRouter.of(context).replace('/login');
-                  },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  side: const BorderSide(color: Colors.white, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                  foregroundColor: Colors.white,
-                  textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                child: const Text('Login'),
-              ),
-              const SizedBox(width: 20),
-
-              // REGISTER Button
-              TextButton(
-                onPressed: () {
-                  GoRouter.of(context).replace('/register');
-
-                },
+              // Recruiter CTA
+              TextButton.icon(
+                onPressed: () => context.go('/recruiter-signup'),
                 style: TextButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                   foregroundColor: primaryColor,
-                  textStyle: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w500),
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text('Register'),
-
+                icon: const Icon(Icons.business_center, size: 18),
+                label: Text("For Recruiters", style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
               ),
+
               const SizedBox(width: 20),
 
-              // FOR RECRUITER Button
-              TextButton(
-                onPressed: () {
-                  context.go('/register');
-                },
-
-                child: GestureDetector(
-                  onTap: () {
-                    context.go('/recruiter-signup');
-
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'For Recruiter',
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          textStyle: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.arrow_forward_ios_sharp,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
+              // Login & Register buttons
+              OutlinedButton(
+                onPressed: () => context.go('/login'),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: primaryColor, width: 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  foregroundColor: primaryColor,
                 ),
+                child: Text("Login", style: GoogleFonts.montserrat(fontWeight: FontWeight.w500)),
+              ),
 
+              const SizedBox(width: 12),
+
+              ElevatedButton(
+                onPressed: () => context.go('/register'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text("Register", style: GoogleFonts.montserrat(fontWeight: FontWeight.w600)),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _NavLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
           ),
         ),
       ),
